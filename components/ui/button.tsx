@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes } from "react";
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 
 const base =
-  "inline-flex min-h-12 items-center justify-center gap-2 rounded-base px-5 text-h3 transition-[opacity,background-color] duration-200 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sunset";
+  "ease-out-soft inline-flex min-h-12 items-center justify-center gap-2 rounded-base px-5 text-h3 transition-[opacity,background-color,transform] duration-200 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sunset";
 
 const variants: Record<Variant, string> = {
   // One primary action per screen (Sunset).

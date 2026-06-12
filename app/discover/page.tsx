@@ -92,8 +92,8 @@ function FeedSection({
         ) : null}
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-6">
-        {cards.map((card) => (
-          <ExperienceCard key={card.id} card={card} />
+        {cards.map((card, i) => (
+          <ExperienceCard key={card.id} card={card} index={i} />
         ))}
       </div>
     </section>

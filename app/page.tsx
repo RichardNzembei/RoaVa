@@ -45,13 +45,13 @@ export default async function Landing() {
           <div className="animate-fade-up flex flex-wrap gap-3 [animation-delay:240ms]">
             <Link
               href="/discover"
-              className="bg-sunset text-accent-contrast inline-flex min-h-12 items-center justify-center rounded-base px-5 text-h3 transition-opacity duration-200 active:opacity-90"
+              className="bg-accent-strong text-accent-contrast ease-out-soft inline-flex min-h-12 items-center justify-center rounded-base px-5 text-h3 shadow-card transition-transform duration-200 active:scale-[0.97]"
             >
               {t("cta_explore")}
             </Link>
             <Link
               href="/operator"
-              className="border-white/50 bg-white/10 inline-flex min-h-12 items-center justify-center rounded-base border px-5 text-h3 backdrop-blur-sm"
+              className="border-white/50 bg-white/10 ease-out-soft inline-flex min-h-12 items-center justify-center rounded-base border px-5 text-h3 backdrop-blur-md transition-colors duration-200 hover:bg-white/20"
             >
               {t("cta_list_experience")}
             </Link>
@@ -80,8 +80,8 @@ export default async function Landing() {
               </Link>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3">
-              {featured.map((card) => (
-                <ExperienceCard key={card.id} card={card} />
+              {featured.map((card, i) => (
+                <ExperienceCard key={card.id} card={card} index={i} />
               ))}
             </div>
           </section>
@@ -152,7 +152,7 @@ export default async function Landing() {
 
 function ValueProp({ title, body }: { title: string; body: string }) {
   return (
-    <div className="border-hairline rounded-card bg-surface flex flex-col gap-1.5 border p-4">
+    <div className="border-hairline rounded-card bg-surface shadow-card ease-out-soft flex flex-col gap-1.5 border p-5 transition-transform duration-300 hover:-translate-y-1">
       <h3 className="text-h3 text-foreground">{title}</h3>
       <p className="text-small text-muted">{body}</p>
     </div>
