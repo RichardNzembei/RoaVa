@@ -14,8 +14,8 @@ Set these in Vercel (Project → Settings → Environment Variables). Local dev 
 | Variable | Scope | Notes |
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | public | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | public | Supabase anon/publishable key |
-| `SUPABASE_SERVICE_ROLE_KEY` | **server** | bypasses RLS — payment/booking/ticket writes only. Never expose. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` *or* `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | public | Supabase public client key. The Vercel↔Supabase integration injects the `PUBLISHABLE_KEY` name automatically; the code accepts either. |
+| `SUPABASE_SERVICE_ROLE_KEY` *or* `SUPABASE_SECRET_KEY` | **server** | bypasses RLS — payment/booking/ticket writes only. Never expose. The integration injects `SUPABASE_SECRET_KEY`; the code accepts either. |
 | `TICKET_SIGNING_SECRET` | **server** | HMAC secret for QR tickets. `openssl rand -hex 32` |
 | `CRON_SECRET` | **server** | protects the reconciliation cron. `openssl rand -hex 16`. **Required in prod.** |
 | `INTASEND_PUBLISHABLE_KEY` / `INTASEND_SECRET_KEY` | server | M-Pesa STK. Absent → app uses the mock provider. |
@@ -29,7 +29,15 @@ Set these in Vercel (Project → Settings → Environment Variables). Local dev 
 
 ## 2. Supabase (cloud)
 
-1. Create a Supabase project (region close to Kenya, e.g. `eu-central` or nearest).
+> **Fastest path (used for this project):** add the **Supabase** integration from the Vercel
+> Marketplace (Project → Storage / Integrations → Supabase → Connect). It provisions a cloud
+> Postgres and auto-injects `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
+> `SUPABASE_SECRET_KEY`, and the `POSTGRES_*` connection strings into the project's env — no
+> manual key copying. Leave the **custom prefix blank** so the names match the code. You still
+> need to push the schema (below) and add the three app-only secrets in §1.
+
+1. Create a Supabase project (region close to Kenya, e.g. `eu-central` or nearest) — or use
+   the Vercel integration above, which creates one for you.
 2. Push the schema: `supabase link --project-ref <ref>` then `supabase db push`
    (applies everything in `supabase/migrations/`). Do **not** run the local seed in prod.
 3. Auth → set up phone sign-in with a **Supabase-supported SMS provider**
