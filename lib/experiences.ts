@@ -15,6 +15,8 @@ export type ExperienceFilters = {
   withinDays?: number;
   /** Restrict to specific experience ids (e.g. a wishlist). */
   ids?: string[];
+  /** Free-text search over title / description / area. */
+  q?: string;
   limit?: number;
 };
 
@@ -72,6 +74,15 @@ export async function fetchExperiences(
   if (filters.ids) {
     if (filters.ids.length === 0) return [];
     query = query.in("id", filters.ids);
+  }
+  if (filters.q) {
+    // Escape PostgREST or-filter metacharacters in the user's term.
+    const term = filters.q.replace(/[%,()]/g, " ").trim();
+    if (term) {
+      query = query.or(
+        `title.ilike.%${term}%,description.ilike.%${term}%,area.ilike.%${term}%`,
+      );
+    }
   }
 
   const { data, error } = await query;
@@ -176,6 +187,7 @@ export type ExperienceDetail = {
     body: string | null;
     reviewerName: string;
     createdAt: string;
+    photos: string[];
   }[];
   rating: { avg: number; count: number } | null;
 };
@@ -228,7 +240,7 @@ export async function fetchExperienceDetail(
 
   const { data: reviewRows } = await supabase
     .from("experience_reviews")
-    .select("id, rating, body, reviewer_name, created_at")
+    .select("id, rating, body, reviewer_name, created_at, photos")
     .eq("experience_id", id)
     .order("created_at", { ascending: false });
 
@@ -238,6 +250,7 @@ export async function fetchExperienceDetail(
     body: r.body as string | null,
     reviewerName: r.reviewer_name as string,
     createdAt: r.created_at as string,
+    photos: (r.photos as string[] | null) ?? [],
   }));
 
   const rating = reviews.length

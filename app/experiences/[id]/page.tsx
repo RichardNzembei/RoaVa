@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { fetchExperienceDetail } from "@/lib/experiences";
 import { createClient } from "@/lib/supabase/server";
 import { publicEnv } from "@/lib/env";
-import { experienceImageUrl } from "@/lib/storage";
+import { experienceImageUrl, reviewImageUrl } from "@/lib/storage";
 import { formatKes } from "@/lib/format";
 import { StarRating } from "@/components/star-rating";
 import { SlotPicker } from "./slot-picker";
@@ -220,6 +220,24 @@ export default async function ExperienceDetailPage({
                 </div>
                 {r.body ? (
                   <p className="text-body text-muted">{r.body}</p>
+                ) : null}
+                {r.photos.length > 0 ? (
+                  <ul className="mt-1 flex gap-2">
+                    {r.photos.map((key) => (
+                      <li
+                        key={key}
+                        className="bg-accent-soft h-20 w-20 overflow-hidden rounded-base"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={reviewImageUrl(key)}
+                          alt=""
+                          loading="lazy"
+                          className="h-full w-full object-cover"
+                        />
+                      </li>
+                    ))}
+                  </ul>
                 ) : null}
               </li>
             ))}

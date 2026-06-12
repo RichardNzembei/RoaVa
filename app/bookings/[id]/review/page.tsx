@@ -10,7 +10,7 @@ export default async function ReviewPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  await requireProfile(`/bookings/${id}/review`);
+  const profile = await requireProfile(`/bookings/${id}/review`);
 
   const supabase = await createClient();
   const { data: booking } = await supabase
@@ -52,7 +52,11 @@ export default async function ReviewPage({
           Real reviews help other guests decide. Thank you.
         </p>
       </div>
-      <ReviewForm bookingId={booking.id} experienceId={booking.experience_id} />
+      <ReviewForm
+        bookingId={booking.id}
+        experienceId={booking.experience_id}
+        profileId={profile.id}
+      />
     </main>
   );
 }

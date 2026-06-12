@@ -522,6 +522,7 @@ export type Database = {
           created_at: string | null
           experience_id: string | null
           id: string | null
+          photos: string[] | null
           rating: number | null
           reviewer_name: string | null
         }

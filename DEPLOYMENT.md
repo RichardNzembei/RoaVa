@@ -117,10 +117,13 @@ forwarding point for swallowed errors.
 
 ## Remaining work
 
+**Done since the initial build:** text search (`/experiences?q=`), review photos upload,
+and EN/SW localization now covers the entry funnel **+ discovery feed + tickets list**.
+
 **Buildable (lower priority):**
-- Full-app localization (beyond the entry funnel — header, landing, sign-in, onboarding are done)
-- Product analytics (PostHog — needs an owner key)
-- Review photos upload
-- Text search
+- Finish localization: experience detail + slot picker, checkout + booking waiting/result,
+  and operator screens (+ action error messages). Pattern: server `getT()` for server
+  components; pass a labels bundle to client components (see `SignInForm` / `discover`).
+- Product analytics (PostHog — needs an owner key).
 
 **Owner-gated** (deploy, IntaSend/AT/SMS keys, Sentry DSN, real-device test, legal, licensed imagery) — see the sections above.

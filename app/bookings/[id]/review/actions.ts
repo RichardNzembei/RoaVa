@@ -32,12 +32,27 @@ export async function submitReview(
   } = await supabase.auth.getUser();
   if (!user) redirect("/sign-in");
 
+  // Keep only photo keys uploaded under this user's own folder for this booking.
+  let photos: string[] = [];
+  try {
+    const parsed = JSON.parse(String(formData.get("photos") ?? "[]"));
+    if (Array.isArray(parsed)) {
+      photos = parsed
+        .filter((k): k is string => typeof k === "string")
+        .filter((k) => k.startsWith(`${user.id}/${bookingId}/`))
+        .slice(0, 4);
+    }
+  } catch {
+    photos = [];
+  }
+
   const { error } = await supabase.from("reviews").insert({
     experience_id: experienceId,
     booking_id: bookingId,
     consumer_profile_id: user.id,
     rating,
     body: body || null,
+    photos,
   });
 
   if (error) {

@@ -85,6 +85,40 @@ const en = {
   onb_continue: "Continue",
   onb_saving: "Saving…",
 
+  // discover feed
+  discover_title: "Find your next day out",
+  discover_subtitle:
+    "Day-trips and experiences near Nairobi — book a slot, pay with M-Pesa.",
+  discover_search: "Search experiences, places, dates…",
+  discover_browse_category: "Browse by category",
+  discover_this_week: "This week",
+  discover_this_week_sub: "Slots in the next 7 days",
+  discover_all: "All experiences",
+  discover_all_sub: "Fresh finds near you",
+  discover_empty: "Nothing here yet — check back soon.",
+
+  // tickets
+  tickets_title: "Your tickets",
+  tickets_empty_title: "No tickets yet",
+  tickets_empty_body:
+    "Book an experience and your QR ticket will appear here — ready to show even without signal.",
+  tickets_explore: "Explore experiences",
+  ticket_valid: "Valid",
+  ticket_used: "Used",
+  ticket_review: "★ Leave a review",
+  guest_one: "guest",
+  guest_many: "guests",
+
+  // booking waiting / result
+  wait_title: "Check your phone",
+  wait_confirmed: "Booking confirmed",
+  wait_view_ticket: "View your ticket",
+  wait_back_home: "Back to home",
+  wait_try_again: "Try again",
+  wait_try_in: "Try again in",
+  wait_browse_other: "Browse other experiences",
+  wait_pay_manual: "Pay manually instead",
+
   // language
   lang_label: "Language",
 } as const;
@@ -158,6 +192,37 @@ const sw: Record<TranslationKey, string> = {
   onb_name_label: "Tukuite nani?",
   onb_continue: "Endelea",
   onb_saving: "Inahifadhi…",
+
+  discover_title: "Pata shughuli yako ya siku",
+  discover_subtitle:
+    "Safari za siku na matukio karibu na Nairobi — weka nafasi, lipa na M-Pesa.",
+  discover_search: "Tafuta matukio, maeneo, tarehe…",
+  discover_browse_category: "Vinjari kwa aina",
+  discover_this_week: "Wiki hii",
+  discover_this_week_sub: "Nafasi katika siku 7 zijazo",
+  discover_all: "Matukio yote",
+  discover_all_sub: "Mapya karibu nawe",
+  discover_empty: "Hakuna kitu bado — angalia tena hivi karibuni.",
+
+  tickets_title: "Tikiti zako",
+  tickets_empty_title: "Hakuna tikiti bado",
+  tickets_empty_body:
+    "Weka nafasi ya tukio na tikiti yako ya QR itaonekana hapa — tayari kuonyesha hata bila mtandao.",
+  tickets_explore: "Gundua matukio",
+  ticket_valid: "Halali",
+  ticket_used: "Imetumika",
+  ticket_review: "★ Acha maoni",
+  guest_one: "mgeni",
+  guest_many: "wageni",
+
+  wait_title: "Angalia simu yako",
+  wait_confirmed: "Nafasi imethibitishwa",
+  wait_view_ticket: "Ona tikiti yako",
+  wait_back_home: "Rudi mwanzo",
+  wait_try_again: "Jaribu tena",
+  wait_try_in: "Jaribu tena baada ya",
+  wait_browse_other: "Vinjari matukio mengine",
+  wait_pay_manual: "Lipa kwa mkono badala yake",
 
   lang_label: "Lugha",
 };

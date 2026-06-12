@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n";
 import { formatSlotDateTime } from "@/lib/format";
 
 // The ticket wallet — confirmed/completed bookings the user can show at the gate.
 export default async function TicketsPage() {
   await requireProfile("/tickets");
+  const t = await getT();
   const supabase = await createClient();
 
   const { data: bookings } = await supabase
@@ -24,17 +26,14 @@ export default async function TicketsPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-5 py-8">
-      <h1 className="text-h1 text-foreground">Your tickets</h1>
+      <h1 className="text-h1 text-foreground">{t("tickets_title")}</h1>
 
       {list.length === 0 ? (
         <div className="border-hairline rounded-card bg-surface flex flex-col items-start gap-2 border p-6">
-          <h2 className="text-h3 text-foreground">No tickets yet</h2>
-          <p className="text-small text-muted">
-            Book an experience and your QR ticket will appear here — ready to
-            show even without signal.
-          </p>
+          <h2 className="text-h3 text-foreground">{t("tickets_empty_title")}</h2>
+          <p className="text-small text-muted">{t("tickets_empty_body")}</p>
           <Link href="/experiences" className="text-small text-sunset">
-            Explore experiences
+            {t("tickets_explore")}
           </Link>
         </div>
       ) : (
@@ -58,7 +57,8 @@ export default async function TicketsPage() {
                     <span className="text-h3 text-foreground">{exp.title}</span>
                     <span className="text-small text-muted">
                       {formatSlotDateTime(slot.start_at)} ·{" "}
-                      {b.party_size} {b.party_size === 1 ? "guest" : "guests"}
+                      {b.party_size}{" "}
+                      {b.party_size === 1 ? t("guest_one") : t("guest_many")}
                     </span>
                   </div>
                   <span
@@ -68,7 +68,7 @@ export default async function TicketsPage() {
                         : "bg-success/15 text-success"
                     }`}
                   >
-                    {used ? "Used" : "Valid"}
+                    {used ? t("ticket_used") : t("ticket_valid")}
                   </span>
                 </Link>
                 {canReview ? (
@@ -76,7 +76,7 @@ export default async function TicketsPage() {
                     href={`/bookings/${b.id}/review`}
                     className="border-hairline rounded-b-card bg-accent-soft text-sunset text-small border border-t-0 px-4 py-2.5"
                   >
-                    ★ Leave a review
+                    {t("ticket_review")}
                   </Link>
                 ) : null}
               </li>

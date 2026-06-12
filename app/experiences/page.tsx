@@ -5,6 +5,7 @@ import { CATEGORIES, COUNTIES } from "@/lib/catalog";
 import { Button } from "@/components/ui/button";
 
 type SP = {
+  q?: string;
   category?: string;
   county?: string;
   date?: string;
@@ -21,6 +22,7 @@ export default async function ExperiencesPage({
   const sp = await searchParams;
 
   const filters: ExperienceFilters = {
+    q: sp.q || undefined,
     category: sp.category || undefined,
     county: sp.county || undefined,
     date: sp.date || undefined,
@@ -32,7 +34,7 @@ export default async function ExperiencesPage({
 
   const cards = await fetchExperiences(filters);
   const hasFilters = Boolean(
-    sp.category || sp.county || sp.date || sp.price || sp.party || sp.when,
+    sp.q || sp.category || sp.county || sp.date || sp.price || sp.party || sp.when,
   );
 
   return (
@@ -50,6 +52,14 @@ export default async function ExperiencesPage({
         action="/experiences"
         className="border-hairline rounded-card bg-surface flex flex-col gap-4 border p-4"
       >
+        <input
+          type="search"
+          name="q"
+          defaultValue={sp.q ?? ""}
+          placeholder="Search experiences, places…"
+          aria-label="Search"
+          className="border-hairline bg-background text-body text-foreground placeholder:text-muted min-h-12 rounded-base border px-4"
+        />
         <div className="grid grid-cols-2 gap-4">
           <Field label="Category">
             <select
