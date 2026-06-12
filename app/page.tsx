@@ -4,6 +4,7 @@ import { fetchExperiences } from "@/lib/experiences";
 import { ExperienceCard } from "@/components/experience-card";
 import { HeroCarousel } from "@/components/hero-carousel";
 import { Logo } from "@/components/logo";
+import { Reveal } from "@/components/reveal";
 import { getT } from "@/lib/i18n";
 import {
   HERO_IMAGES,
@@ -36,7 +37,7 @@ export default async function Landing() {
           <span className="animate-fade-up text-small/none opacity-90">
             {t("brand_descriptor")}
           </span>
-          <h1 className="animate-fade-up text-display [animation-delay:80ms]">
+          <h1 className="animate-fade-up text-hero max-w-xl [animation-delay:80ms]">
             {t("hero_title")}
           </h1>
           <p className="animate-fade-up text-body max-w-md opacity-95 [animation-delay:160ms]">
@@ -59,22 +60,22 @@ export default async function Landing() {
         </div>
       </section>
 
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-12 px-5 py-12">
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-16 px-5 py-16">
         {/* Why RoaVa */}
-        <section className="flex flex-col gap-5">
-          <h2 className="text-h1 text-foreground">{t("why_title")}</h2>
+        <Reveal as="section" className="flex flex-col gap-5">
+          <h2 className="text-display text-foreground">{t("why_title")}</h2>
           <div className="grid gap-4 sm:grid-cols-3">
             <ValueProp title={t("vp_mpesa_title")} body={t("vp_mpesa_body")} />
             <ValueProp title={t("vp_trust_title")} body={t("vp_trust_body")} />
             <ValueProp title={t("vp_local_title")} body={t("vp_local_body")} />
           </div>
-        </section>
+        </Reveal>
 
         {/* Live preview */}
         {featured.length > 0 ? (
-          <section className="flex flex-col gap-4">
+          <Reveal as="section" className="flex flex-col gap-4">
             <div className="flex items-end justify-between gap-3">
-              <h2 className="text-h1 text-foreground">{t("popular_title")}</h2>
+              <h2 className="text-display text-foreground">{t("popular_title")}</h2>
               <Link href="/discover" className="text-small text-sunset shrink-0">
                 {t("see_all")}
               </Link>
@@ -84,12 +85,12 @@ export default async function Landing() {
                 <ExperienceCard key={card.id} card={card} index={i} />
               ))}
             </div>
-          </section>
+          </Reveal>
         ) : null}
 
         {/* How it works */}
-        <section className="flex flex-col gap-5">
-          <h2 className="text-h1 text-foreground">{t("how_title")}</h2>
+        <Reveal as="section" className="flex flex-col gap-5">
+          <h2 className="text-display text-foreground">{t("how_title")}</h2>
           <ol className="flex flex-col gap-4">
             <Step n={1} title={t("step1_title")}>
               {t("step1_body")}
@@ -101,10 +102,13 @@ export default async function Landing() {
               {t("step3_body")}
             </Step>
           </ol>
-        </section>
+        </Reveal>
 
         {/* Operators — photo-backed band */}
-        <section className="relative isolate overflow-hidden rounded-card">
+        <Reveal
+          as="section"
+          className="shadow-card relative isolate flex min-h-64 flex-col justify-end overflow-hidden rounded-card"
+        >
           <div className="absolute inset-0 -z-10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -113,19 +117,19 @@ export default async function Landing() {
               loading="lazy"
               className="animate-kenburns h-full w-full object-cover"
             />
-            <div className="from-savanna/90 to-ink/70 absolute inset-0 bg-gradient-to-r" />
+            <div className="from-savanna/95 via-savanna/70 to-ink/40 absolute inset-0 bg-gradient-to-tr" />
           </div>
-          <div className="flex flex-col gap-3 p-6 text-white">
-            <h2 className="text-h2">{t("ops_title")}</h2>
+          <div className="flex flex-col gap-3 p-7 text-white">
+            <h2 className="text-display">{t("ops_title")}</h2>
             <p className="text-body max-w-md opacity-95">{t("ops_body")}</p>
             <Link
               href="/operator"
-              className="bg-surface text-savanna inline-flex min-h-12 w-fit items-center justify-center rounded-base px-5 text-h3"
+              className="bg-surface text-savanna ease-out-soft mt-1 inline-flex min-h-12 w-fit items-center justify-center rounded-base px-5 text-h3 shadow-card transition-transform duration-200 active:scale-[0.97]"
             >
               {t("nav_list")}
             </Link>
           </div>
-        </section>
+        </Reveal>
       </div>
 
       {/* Footer */}

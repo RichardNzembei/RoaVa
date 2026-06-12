@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { fetchExperiences } from "@/lib/experiences";
 import { getT } from "@/lib/i18n";
 import { ExperienceCard } from "@/components/experience-card";
+import { EmptyState } from "@/components/empty-state";
 
 export default async function WishlistPage() {
   await requireProfile("/wishlist");
@@ -21,13 +22,15 @@ export default async function WishlistPage() {
       <h1 className="text-h1 text-foreground">{t("wishlist_title")}</h1>
 
       {cards.length === 0 ? (
-        <div className="border-hairline rounded-card bg-surface flex flex-col items-start gap-2 border p-6">
-          <h2 className="text-h3 text-foreground">{t("wishlist_empty_title")}</h2>
-          <p className="text-small text-muted">{t("wishlist_empty_body")}</p>
-          <Link href="/discover" className="text-small text-sunset">
-            {t("wishlist_explore")}
-          </Link>
-        </div>
+        <EmptyState
+          title={t("wishlist_empty_title")}
+          body={t("wishlist_empty_body")}
+          action={
+            <Link href="/discover" className="text-small text-sunset">
+              {t("wishlist_explore")}
+            </Link>
+          }
+        />
       ) : (
         <div className="grid grid-cols-2 gap-x-4 gap-y-6">
           {cards.map((card, i) => (

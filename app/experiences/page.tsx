@@ -4,6 +4,7 @@ import { ExperienceCard } from "@/components/experience-card";
 import { CATEGORIES, COUNTIES } from "@/lib/catalog";
 import { getT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/empty-state";
 
 type SP = {
   q?: string;
@@ -136,13 +137,15 @@ export default async function ExperiencesPage({
       </form>
 
       {cards.length === 0 ? (
-        <div className="border-hairline rounded-card bg-surface flex flex-col items-start gap-2 border p-6">
-          <h2 className="text-h3 text-foreground">{t("browse_none_title")}</h2>
-          <p className="text-small text-muted">{t("browse_none_body")}</p>
-          <Link href="/experiences" className="text-small text-sunset">
-            {t("browse_clear")}
-          </Link>
-        </div>
+        <EmptyState
+          title={t("browse_none_title")}
+          body={t("browse_none_body")}
+          action={
+            <Link href="/experiences" className="text-small text-sunset">
+              {t("browse_clear")}
+            </Link>
+          }
+        />
       ) : (
         <div className="grid grid-cols-2 gap-x-4 gap-y-6">
           {cards.map((card, i) => (

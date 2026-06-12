@@ -53,6 +53,10 @@
   --color-danger: #e24b4a;
 
   /* Type scale (Section 1) — paired with line-heights */
+  --text-hero: clamp(2.5rem, 7vw, 3.75rem); /* editorial display — fluid 40→60px */
+  --text-hero--line-height: 1.04;
+  --text-hero--font-weight: 500;
+  --text-hero--letter-spacing: -0.02em;
   --text-display: 2rem; /* 32px */
   --text-display--line-height: 2.375rem; /* 38px */
   --text-display--font-weight: 500;

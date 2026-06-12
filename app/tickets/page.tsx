@@ -3,6 +3,7 @@ import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n";
 import { formatSlotDateTime } from "@/lib/format";
+import { EmptyState } from "@/components/empty-state";
 
 // The ticket wallet — confirmed/completed bookings the user can show at the gate.
 export default async function TicketsPage() {
@@ -29,13 +30,15 @@ export default async function TicketsPage() {
       <h1 className="text-h1 text-foreground">{t("tickets_title")}</h1>
 
       {list.length === 0 ? (
-        <div className="border-hairline rounded-card bg-surface flex flex-col items-start gap-2 border p-6">
-          <h2 className="text-h3 text-foreground">{t("tickets_empty_title")}</h2>
-          <p className="text-small text-muted">{t("tickets_empty_body")}</p>
-          <Link href="/experiences" className="text-small text-sunset">
-            {t("tickets_explore")}
-          </Link>
-        </div>
+        <EmptyState
+          title={t("tickets_empty_title")}
+          body={t("tickets_empty_body")}
+          action={
+            <Link href="/experiences" className="text-small text-sunset">
+              {t("tickets_explore")}
+            </Link>
+          }
+        />
       ) : (
         <ul className="flex flex-col gap-3">
           {list.map((b) => {
