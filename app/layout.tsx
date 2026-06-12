@@ -56,7 +56,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="bg-background text-foreground flex min-h-full flex-col">
+      <body className="bg-background text-foreground flex min-h-full flex-col pb-16 sm:pb-0">
         <SiteHeader />
         {children}
         <ServiceWorkerRegistrar />
