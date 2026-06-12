@@ -98,7 +98,7 @@ export function SignInForm({
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"
-            maxLength={6}
+            maxLength={8}
             autoFocus
             placeholder="123456"
             hint={`${labels.sentTo} ${display}.`}
