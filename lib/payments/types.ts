@@ -17,6 +17,21 @@ export type StkInitResult =
   | { ok: true; providerRef: string }
   | { ok: false; error: string };
 
+// Payout (B2C) — disburse the operator's net share. Same non-custodial rail:
+// the provider moves funds provider→operator; we only initiate and read state.
+export type DisburseParams = {
+  amountKes: number;
+  /** Operator payout M-Pesa number in E.164 (+254…). */
+  phone: string;
+  /** Our booking id — the api_ref we reconcile payout callbacks against. */
+  reference: string;
+  narrative: string;
+};
+
+export type DisburseInitResult =
+  | { ok: true; providerRef: string }
+  | { ok: false; error: string };
+
 // Canonical failure modes we surface to the user with tailored copy (§6.5).
 export type FailureMode =
   | "timeout"
@@ -31,4 +46,8 @@ export interface PaymentProvider {
   initiateStk(params: InitiateParams): Promise<StkInitResult>;
   /** Used by the reconciliation/poll fallback when a callback is missed. */
   getStatus(providerRef: string): Promise<ProviderState>;
+  /** Disburse the operator's share (B2C). "Accepted" ≠ paid — confirm on callback. */
+  disburse(params: DisburseParams): Promise<DisburseInitResult>;
+  /** Poll fallback for a missed payout callback. */
+  getPayoutStatus(providerRef: string): Promise<ProviderState>;
 }

@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { requireOperator } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { createServiceClient } from "@/lib/supabase/service";
 import { normalizeKenyanPhone } from "@/lib/phone";
+import { startPayout } from "@/lib/payouts";
 
 export type PayoutNumberState =
   | { status: "idle" }
@@ -42,32 +42,15 @@ export async function savePayoutNumber(
 }
 
 /*
-  Record a payout for a completed booking. In production this is where the
-  operator's share is disbursed via IntaSend B2C (M-Pesa) on the non-custodial
-  rail — funds move provider→operator, we only record the result. Here we mark
-  payout_status so the ledger reflects settlement. Ownership is enforced: the
-  booking must belong to one of this operator's experiences.
+  Send (or retry) the operator's share for a completed booking via the provider's
+  B2C rail (CLAUDE.md §3). Ownership, eligibility, and the share split are all
+  enforced inside startPayout → initiate_payout (DB). The booking only flips to
+  'paid' on the disbursement callback — here it becomes 'pending' (or 'failed' if
+  the provider can't be reached). Used as a bound form action, so it returns void
+  and the page reflects the new payout_status on revalidation.
 */
-export async function recordPayout(bookingId: string) {
+export async function sendPayout(bookingId: string) {
   const operator = await requireOperator();
-  const service = createServiceClient();
-
-  const { data: booking } = await service
-    .from("bookings")
-    .select("id, status, experiences!inner ( operator_id )")
-    .eq("id", bookingId)
-    .maybeSingle();
-
-  const exp = booking?.experiences as unknown as { operator_id: string } | undefined;
-  if (!booking || exp?.operator_id !== operator.id) return;
-  if (booking.status !== "completed") return;
-
-  // TODO(prod): initiate IntaSend B2C payout to operator_payouts.payout_msisdn,
-  // then set 'paid' on the disbursement callback. Mocked as immediate here.
-  await service
-    .from("bookings")
-    .update({ payout_status: "paid" })
-    .eq("id", bookingId);
-
+  await startPayout(bookingId, operator.id);
   revalidatePath("/operator/payouts");
 }

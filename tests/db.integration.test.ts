@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { randomUUID } from "node:crypto";
 import { createServiceClient } from "@/lib/supabase/service";
+import { startPayout } from "@/lib/payouts";
+import { processPayoutCallback } from "@/lib/payouts/webhook";
 
 /*
   Integration tests for the money-critical DB functions, run against the local
@@ -195,5 +197,206 @@ describe.skipIf(!available)("payment + capacity invariants (local DB)", () => {
       results.push(data as boolean);
     }
     expect(results).toEqual([true, true, true, false, false]);
+  });
+});
+
+/*
+  Payout / disbursement invariants — the settle half of the money model.
+  Mirrors the collect-side guarantees: ownership + eligibility gating, the
+  net-share split (amount − commission), idempotent confirm/fail, and retry
+  after a failure. All transitions go through the security-definer functions.
+*/
+describe.skipIf(!available)("operator payout invariants (local DB)", () => {
+  let experienceId: string;
+  let operatorId: string;
+  let consumerId: string;
+
+  // Booking with explicit amount/commission, inserted straight to 'completed'.
+  async function completedBooking(
+    slotId: string,
+    amount: number,
+    commission: number,
+  ): Promise<string> {
+    const id = randomUUID();
+    const { error } = await db.from("bookings").insert({
+      id,
+      experience_id: experienceId,
+      slot_id: slotId,
+      consumer_profile_id: consumerId,
+      party_size: 1,
+      amount_kes: amount,
+      commission_kes: commission,
+      status: "completed",
+    });
+    if (error) throw error;
+    created.bookings.push(id);
+    return id;
+  }
+
+  beforeAll(async () => {
+    const { data: exp } = await db
+      .from("experiences")
+      .select("id, operator_id")
+      .eq("status", "published")
+      .limit(1)
+      .single();
+    experienceId = exp!.id;
+    operatorId = exp!.operator_id;
+    const { data: cons } = await db
+      .from("profiles")
+      .select("id")
+      .eq("role", "consumer")
+      .limit(1)
+      .single();
+    consumerId = cons!.id;
+    // Ensure a payout number is on file so initiate_payout is eligible.
+    await db
+      .from("operator_payouts")
+      .upsert({ operator_id: operatorId, payout_msisdn: "+254712345678" });
+  });
+
+  it("initiate_payout gates on completed + ownership, and splits the share", async () => {
+    const slot = await makeSlot(experienceId, 5);
+    const bookingId = await completedBooking(slot, 5000, 500); // net 4500
+
+    // Wrong operator → not eligible.
+    const wrong = await db.rpc("initiate_payout", {
+      p_booking_id: bookingId,
+      p_operator_id: randomUUID(),
+    });
+    expect(wrong.data).toBeNull();
+
+    // Owner → eligible; payout row carries the net share; booking flips pending.
+    const ok = await db.rpc("initiate_payout", {
+      p_booking_id: bookingId,
+      p_operator_id: operatorId,
+    });
+    expect(ok.data).toBeTruthy();
+    const { data: po } = await db
+      .from("payouts")
+      .select("amount_kes, status, msisdn")
+      .eq("id", ok.data as string)
+      .single();
+    expect(po!.amount_kes).toBe(4500);
+    expect(po!.status).toBe("pending");
+    const { data: bk } = await db
+      .from("bookings")
+      .select("payout_status")
+      .eq("id", bookingId)
+      .single();
+    expect(bk!.payout_status).toBe("pending");
+
+    // Calling again while pending is a no-op that returns the same payout.
+    const again = await db.rpc("initiate_payout", {
+      p_booking_id: bookingId,
+      p_operator_id: operatorId,
+    });
+    expect(again.data).toBe(ok.data);
+  });
+
+  it("initiate_payout refuses a non-completed booking", async () => {
+    const slot = await makeSlot(experienceId, 5);
+    const id = randomUUID();
+    await db.from("bookings").insert({
+      id,
+      experience_id: experienceId,
+      slot_id: slot,
+      consumer_profile_id: consumerId,
+      party_size: 1,
+      amount_kes: 3000,
+      commission_kes: 300,
+      status: "confirmed", // not completed yet
+    });
+    created.bookings.push(id);
+    const res = await db.rpc("initiate_payout", {
+      p_booking_id: id,
+      p_operator_id: operatorId,
+    });
+    expect(res.data).toBeNull();
+  });
+
+  it("confirm_payout is idempotent", async () => {
+    const slot = await makeSlot(experienceId, 5);
+    const bookingId = await completedBooking(slot, 5000, 500);
+    const payoutId = (
+      await db.rpc("initiate_payout", {
+        p_booking_id: bookingId,
+        p_operator_id: operatorId,
+      })
+    ).data as string;
+    const ref = `it-payout-${randomUUID()}`;
+    await db.from("payouts").update({ provider_ref: ref }).eq("id", payoutId);
+
+    const first = await db.rpc("confirm_payout", { p_provider_ref: ref, p_raw: null });
+    const second = await db.rpc("confirm_payout", { p_provider_ref: ref, p_raw: null });
+    expect(first.data).toBe(bookingId);
+    expect(second.data).toBe(bookingId);
+
+    const { data: po } = await db.from("payouts").select("status").eq("id", payoutId).single();
+    const { data: bk } = await db.from("bookings").select("payout_status").eq("id", bookingId).single();
+    expect(po!.status).toBe("success");
+    expect(bk!.payout_status).toBe("paid");
+  });
+
+  it("fail_payout marks failed and allows a fresh retry", async () => {
+    const slot = await makeSlot(experienceId, 5);
+    const bookingId = await completedBooking(slot, 5000, 500);
+    const payoutId = (
+      await db.rpc("initiate_payout", {
+        p_booking_id: bookingId,
+        p_operator_id: operatorId,
+      })
+    ).data as string;
+    const ref = `it-payout-fail-${randomUUID()}`;
+    await db.from("payouts").update({ provider_ref: ref }).eq("id", payoutId);
+
+    await db.rpc("fail_payout", { p_provider_ref: ref, p_reason: "transfer failed", p_raw: null });
+    let { data: bk } = await db.from("bookings").select("payout_status").eq("id", bookingId).single();
+    expect(bk!.payout_status).toBe("failed");
+
+    // Retry: same payout row resets to pending with the provider_ref cleared.
+    const retry = await db.rpc("initiate_payout", {
+      p_booking_id: bookingId,
+      p_operator_id: operatorId,
+    });
+    expect(retry.data).toBe(payoutId);
+    const { data: po } = await db
+      .from("payouts")
+      .select("status, provider_ref")
+      .eq("id", payoutId)
+      .single();
+    expect(po!.status).toBe("pending");
+    expect(po!.provider_ref).toBeNull();
+    ({ data: bk } = await db.from("bookings").select("payout_status").eq("id", bookingId).single());
+    expect(bk!.payout_status).toBe("pending");
+  });
+
+  it("end-to-end via the lib + mock provider: pending → callback → paid", async () => {
+    const slot = await makeSlot(experienceId, 5);
+    const bookingId = await completedBooking(slot, 5000, 500);
+
+    // startPayout: initiate + mock B2C disburse → pending, provider_ref attached.
+    const started = await startPayout(bookingId, operatorId);
+    expect(started.ok).toBe(true);
+    let { data: bk } = await db.from("bookings").select("payout_status").eq("id", bookingId).single();
+    expect(bk!.payout_status).toBe("pending");
+
+    // The mock mints `mockpayout_<bookingId>`; deliver the success callback.
+    const res = await processPayoutCallback({
+      providerRef: `mockpayout_${bookingId}`,
+      state: "success",
+    });
+    expect(res.bookingId).toBe(bookingId);
+    ({ data: bk } = await db.from("bookings").select("payout_status").eq("id", bookingId).single());
+    expect(bk!.payout_status).toBe("paid");
+
+    // Idempotent: a replayed callback doesn't change anything.
+    await processPayoutCallback({ providerRef: `mockpayout_${bookingId}`, state: "success" });
+    const { data: po } = await db
+      .from("payouts")
+      .select("status")
+      .eq("booking_id", bookingId)
+      .single();
+    expect(po!.status).toBe("success");
   });
 });

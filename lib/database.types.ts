@@ -324,6 +324,66 @@ export type Database = {
           },
         ]
       }
+      payouts: {
+        Row: {
+          amount_kes: number
+          booking_id: string
+          created_at: string
+          failure_reason: string | null
+          id: string
+          msisdn: string
+          operator_id: string
+          provider: string
+          provider_ref: string | null
+          raw_callback: Json | null
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount_kes: number
+          booking_id: string
+          created_at?: string
+          failure_reason?: string | null
+          id?: string
+          msisdn: string
+          operator_id: string
+          provider?: string
+          provider_ref?: string | null
+          raw_callback?: Json | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount_kes?: number
+          booking_id?: string
+          created_at?: string
+          failure_reason?: string | null
+          id?: string
+          msisdn?: string
+          operator_id?: string
+          provider?: string
+          provider_ref?: string | null
+          raw_callback?: Json | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -559,6 +619,10 @@ export type Database = {
         Args: { p_provider_ref: string; p_raw?: Json }
         Returns: string
       }
+      confirm_payout: {
+        Args: { p_provider_ref: string; p_raw?: Json }
+        Returns: string
+      }
       consumer_owns_booking: {
         Args: { p_booking_id: string }
         Returns: boolean
@@ -573,6 +637,14 @@ export type Database = {
       }
       fail_booking_payment: {
         Args: { p_provider_ref: string; p_raw?: Json; p_reason: string }
+        Returns: string
+      }
+      fail_payout: {
+        Args: { p_provider_ref: string; p_raw?: Json; p_reason: string }
+        Returns: string
+      }
+      initiate_payout: {
+        Args: { p_booking_id: string; p_operator_id: string }
         Returns: string
       }
       is_admin: { Args: never; Returns: boolean }

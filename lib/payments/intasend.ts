@@ -2,6 +2,8 @@ import "server-only";
 
 import { serverEnv } from "@/lib/env";
 import type {
+  DisburseInitResult,
+  DisburseParams,
   InitiateParams,
   PaymentProvider,
   ProviderState,
@@ -78,6 +80,65 @@ export class IntaSendProvider implements PaymentProvider {
       return "pending";
     }
   }
+
+  /*
+    B2C payout (send-money / transfer). NOTE: IntaSend's transfer API is
+    initiate-then-approve and the exact endpoint paths, the approval step, and
+    the M-Pesa channel name MUST be re-verified against current IntaSend docs +
+    a sandbox account before going live (same caveat as the collection path).
+    We return the transfer tracking id as the provider_ref and confirm only on
+    the transfer callback / status poll — never on this accepted response.
+  */
+  async disburse(params: DisburseParams): Promise<DisburseInitResult> {
+    try {
+      const res = await fetch(`${this.base()}/api/v1/send-money/initiate/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${serverEnv.intasend.secretKey}`,
+        },
+        body: JSON.stringify({
+          currency: "KES",
+          requires_approval: "NO",
+          transactions: [
+            {
+              account: params.phone.replace(/^\+/, ""),
+              amount: params.amountKes,
+              name: params.narrative,
+              narrative: params.narrative,
+            },
+          ],
+        }),
+      });
+      if (!res.ok) {
+        return { ok: false, error: `Provider returned ${res.status}` };
+      }
+      const data = (await res.json()) as { tracking_id?: string; id?: string };
+      const ref = data.tracking_id ?? data.id;
+      if (!ref) return { ok: false, error: "No tracking id in response." };
+      return { ok: true, providerRef: ref };
+    } catch {
+      return { ok: false, error: "Could not reach the payout provider." };
+    }
+  }
+
+  async getPayoutStatus(providerRef: string): Promise<ProviderState> {
+    try {
+      const res = await fetch(`${this.base()}/api/v1/send-money/status/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${serverEnv.intasend.secretKey}`,
+        },
+        body: JSON.stringify({ tracking_id: providerRef }),
+      });
+      if (!res.ok) return "pending";
+      const data = (await res.json()) as { status?: string; state?: string };
+      return mapTransferState(data.status ?? data.state);
+    } catch {
+      return "pending";
+    }
+  }
 }
 
 // IntaSend invoice states → our coarse provider state.
@@ -89,5 +150,19 @@ export function mapState(state: string | undefined): ProviderState {
       return "failed";
     default:
       return "pending"; // PENDING, PROCESSING, etc.
+  }
+}
+
+// IntaSend transfer/send-money states → our coarse provider state.
+export function mapTransferState(state: string | undefined): ProviderState {
+  switch ((state ?? "").toUpperCase()) {
+    case "COMPLETED":
+    case "COMPLETE":
+      return "success";
+    case "FAILED":
+    case "CANCELLED":
+      return "failed";
+    default:
+      return "pending"; // PENDING, PROCESSING, CHARGE, etc.
   }
 }

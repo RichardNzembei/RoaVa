@@ -3,8 +3,16 @@ import { requireOperator } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatKes, formatSlotDateTime } from "@/lib/format";
 import { Button } from "@/components/ui/button";
-import { recordPayout } from "./actions";
+import { sendPayout } from "./actions";
 import { PayoutNumberForm } from "./payout-number-form";
+
+// Per-booking payout state → badge. Colour is always paired with a label (§7).
+const PAYOUT_BADGE: Record<string, { label: string; className: string }> = {
+  not_applicable: { label: "Owed", className: "bg-warning/15 text-warning" },
+  pending: { label: "Sending", className: "bg-accent-soft text-sunset" },
+  paid: { label: "Paid", className: "bg-success/15 text-success" },
+  failed: { label: "Failed", className: "bg-danger/15 text-danger" },
+};
 
 export default async function PayoutsPage() {
   const operator = await requireOperator("/operator/payouts");
@@ -32,12 +40,18 @@ export default async function PayoutsPage() {
   const net = (b: { amount_kes: number; commission_kes: number }) =>
     b.amount_kes - b.commission_kes;
 
+  const hasPayoutNumber = Boolean(payout?.payout_msisdn);
+
   const totalGross = rows.reduce((s, b) => s + b.amount_kes, 0);
   const totalNet = rows.reduce((s, b) => s + net(b), 0);
   const totalPaid = rows
     .filter((b) => b.payout_status === "paid")
     .reduce((s, b) => s + net(b), 0);
-  const owed = totalNet - totalPaid;
+  const totalSending = rows
+    .filter((b) => b.payout_status === "pending")
+    .reduce((s, b) => s + net(b), 0);
+  // "Owed" = net earned that hasn't been paid out and isn't currently in flight.
+  const owed = totalNet - totalPaid - totalSending;
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-5 py-8">
@@ -57,7 +71,11 @@ export default async function PayoutsPage() {
       <div className="grid grid-cols-3 gap-3">
         <Stat label="Net earned" value={formatKes(totalNet)} />
         <Stat label="Paid out" value={formatKes(totalPaid)} tone="savanna" />
-        <Stat label="Owed" value={formatKes(owed)} tone="sunset" />
+        <Stat
+          label={totalSending > 0 ? "Sending" : "Owed"}
+          value={formatKes(totalSending > 0 ? totalSending : owed)}
+          tone="sunset"
+        />
       </div>
 
       {rows.length === 0 ? (
@@ -69,7 +87,10 @@ export default async function PayoutsPage() {
           {rows.map((b) => {
             const exp = b.experiences as unknown as { title: string };
             const slot = b.availability_slots as unknown as { start_at: string };
-            const paid = b.payout_status === "paid";
+            const status = b.payout_status; // not_applicable | pending | paid | failed
+            const badge = PAYOUT_BADGE[status] ?? PAYOUT_BADGE.not_applicable;
+            // A payout can be sent when nothing is in flight or it previously failed.
+            const canSend = status === "not_applicable" || status === "failed";
             return (
               <li
                 key={b.id}
@@ -83,15 +104,11 @@ export default async function PayoutsPage() {
                       {b.party_size === 1 ? "guest" : "guests"}
                     </span>
                   </div>
-                  <span
-                    className={`text-caption rounded-base px-2 py-1 ${
-                      paid ? "bg-success/15 text-success" : "bg-warning/15 text-warning"
-                    }`}
-                  >
-                    {paid ? "Paid" : "Owed"}
+                  <span className={`text-caption rounded-base px-2 py-1 ${badge.className}`}>
+                    {badge.label}
                   </span>
                 </div>
-                <div className="border-hairline flex items-center justify-between border-t pt-3">
+                <div className="border-hairline flex items-center justify-between gap-3 border-t pt-3">
                   <div className="text-caption text-muted">
                     Gross {formatKes(b.amount_kes)} · fee{" "}
                     {formatKes(b.commission_kes)}
@@ -100,15 +117,25 @@ export default async function PayoutsPage() {
                     <span className="text-h3 text-foreground">
                       {formatKes(net(b))}
                     </span>
-                    {!paid ? (
-                      <form action={recordPayout.bind(null, b.id)}>
+                    {canSend && hasPayoutNumber ? (
+                      <form action={sendPayout.bind(null, b.id)}>
                         <Button type="submit" variant="secondary">
-                          Record payout
+                          {status === "failed" ? "Retry payout" : "Send payout"}
                         </Button>
                       </form>
                     ) : null}
                   </div>
                 </div>
+                {status === "failed" ? (
+                  <p className="text-caption text-danger">
+                    That payout did not go through. Check your M-Pesa number and try again.
+                  </p>
+                ) : null}
+                {canSend && !hasPayoutNumber ? (
+                  <p className="text-caption text-muted">
+                    Add your M-Pesa payout number above to send this.
+                  </p>
+                ) : null}
               </li>
             );
           })}

@@ -1,6 +1,8 @@
 import "server-only";
 
 import type {
+  DisburseInitResult,
+  DisburseParams,
   InitiateParams,
   PaymentProvider,
   ProviderState,
@@ -29,6 +31,19 @@ export class MockProvider implements PaymentProvider {
   }
 
   async getStatus(_providerRef: string): Promise<ProviderState> {
+    return "pending";
+  }
+
+  // Payout mirror: minting a ref means the disbursement was ACCEPTED, not paid.
+  // The result is delivered via the dev-only payout trigger endpoint.
+  async disburse(params: DisburseParams): Promise<DisburseInitResult> {
+    if (params.amountKes <= 0) {
+      return { ok: false, error: "Invalid amount." };
+    }
+    return { ok: true, providerRef: `mockpayout_${params.reference}` };
+  }
+
+  async getPayoutStatus(_providerRef: string): Promise<ProviderState> {
     return "pending";
   }
 }
