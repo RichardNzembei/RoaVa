@@ -63,10 +63,14 @@ const en = {
 
   // sign-in
   signin_title: "Sign in or sign up",
-  signin_subtitle: "Use your phone number — no password needed.",
+  signin_subtitle: "No password needed — use your phone, email, or Google.",
+  signin_method_phone: "Phone",
+  signin_method_email: "Email",
   signin_phone_label: "Phone number",
   signin_phone_hint:
     "We'll text you a code to sign in. Standard rates may apply.",
+  signin_email_label: "Email address",
+  signin_email_hint: "We'll email you a 6-digit code to sign in.",
   signin_send: "Send code",
   signin_sending: "Just a moment…",
   signin_code_label: "Enter the 6-digit code",
@@ -75,7 +79,9 @@ const en = {
   signin_verifying: "Just a moment…",
   signin_resend: "Resend code",
   signin_resend_in: "Resend code in",
-  signin_change: "Change number",
+  signin_change: "Use a different method",
+  signin_or: "or",
+  signin_google: "Continue with Google",
 
   // onboarding
   onb_title: "Welcome to RoaVa",
@@ -413,6 +419,8 @@ const en = {
 
   // server-action error / validation messages
   err_phone_invalid: "Enter a valid Kenyan phone number, e.g. 0712 345 678.",
+  err_email_invalid: "Enter a valid email address.",
+  err_oauth: "Couldn't sign in with that provider. Please try again.",
   err_otp_ratelimit: "Too many code requests. Please wait a few minutes and try again.",
   err_otp_empty: "Enter the code we sent you.",
   err_otp_bad: "That code didn't work. Check it or request a new one.",
@@ -519,10 +527,15 @@ const sw: Record<TranslationKey, string> = {
   footer_search: "Tafuta",
 
   signin_title: "Ingia au jisajili",
-  signin_subtitle: "Tumia namba yako ya simu — hakuna nenosiri.",
+  signin_subtitle:
+    "Hakuna nenosiri — tumia simu, barua pepe, au Google.",
+  signin_method_phone: "Simu",
+  signin_method_email: "Barua pepe",
   signin_phone_label: "Namba ya simu",
   signin_phone_hint:
     "Tutakutumia msimbo wa kuingia. Ada za kawaida zaweza kutumika.",
+  signin_email_label: "Anwani ya barua pepe",
+  signin_email_hint: "Tutakutumia msimbo wa tarakimu 6 kwa barua pepe.",
   signin_send: "Tuma msimbo",
   signin_sending: "Subiri kidogo…",
   signin_code_label: "Weka msimbo wa tarakimu 6",
@@ -531,7 +544,9 @@ const sw: Record<TranslationKey, string> = {
   signin_verifying: "Subiri kidogo…",
   signin_resend: "Tuma tena msimbo",
   signin_resend_in: "Tuma tena baada ya",
-  signin_change: "Badilisha namba",
+  signin_change: "Tumia njia nyingine",
+  signin_or: "au",
+  signin_google: "Endelea na Google",
 
   onb_title: "Karibu RoaVa",
   onb_subtitle:
@@ -848,6 +863,8 @@ const sw: Record<TranslationKey, string> = {
   pay_num_saved: "Namba ya malipo imehifadhiwa.",
 
   err_phone_invalid: "Weka namba sahihi ya simu ya Kenya, k.m. 0712 345 678.",
+  err_email_invalid: "Weka anwani sahihi ya barua pepe.",
+  err_oauth: "Imeshindwa kuingia na mtoa huduma huyo. Tafadhali jaribu tena.",
   err_otp_ratelimit: "Maombi mengi ya msimbo. Tafadhali subiri dakika chache ujaribu tena.",
   err_otp_empty: "Weka msimbo tuliokutumia.",
   err_otp_bad: "Msimbo huo haukufanya kazi. Uangalie au uombe mpya.",

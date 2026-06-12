@@ -6,9 +6,9 @@ import { SignInForm } from "./sign-in-form";
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; error?: string }>;
 }) {
-  const { next } = await searchParams;
+  const { next, error } = await searchParams;
 
   // Already signed in — no reason to be here.
   if (await getUser()) {
@@ -24,11 +24,24 @@ export default async function SignInPage({
         <p className="text-body text-muted">{t("signin_subtitle")}</p>
       </div>
 
+      {error === "oauth" ? (
+        <p
+          role="alert"
+          className="border-danger/40 bg-danger/10 text-small text-danger rounded-base border px-4 py-3"
+        >
+          {t("err_oauth")}
+        </p>
+      ) : null}
+
       <SignInForm
         next={next}
         labels={{
+          methodPhone: t("signin_method_phone"),
+          methodEmail: t("signin_method_email"),
           phoneLabel: t("signin_phone_label"),
           phoneHint: t("signin_phone_hint"),
+          emailLabel: t("signin_email_label"),
+          emailHint: t("signin_email_hint"),
           send: t("signin_send"),
           sending: t("signin_sending"),
           codeLabel: t("signin_code_label"),
@@ -38,6 +51,8 @@ export default async function SignInPage({
           resend: t("signin_resend"),
           resendIn: t("signin_resend_in"),
           change: t("signin_change"),
+          or: t("signin_or"),
+          google: t("signin_google"),
         }}
       />
     </main>
