@@ -145,9 +145,11 @@ end-to-end against the mock; live IntaSend B2C wiring + real-money test are owne
 > it in the SQL editor) before the `/operator/payouts` page works in production.
 
 **Buildable (lower priority):**
-- Finish localization: experience detail + slot picker, checkout + booking waiting/result,
-  and operator screens (+ action error messages). Pattern: server `getT()` for server
-  components; pass a labels bundle to client components (see `SignInForm` / `discover`).
+- ~~Finish localization~~ **Done** — EN/SW now covers every screen (detail, slot picker,
+  checkout, booking result, review, search/wishlist, and all operator screens). Server
+  components use `getT()`; client components take a typed labels bundle.
 - Product analytics (PostHog — needs an owner key).
+- Server-action *error messages* are still English-only (they return literal strings from
+  `actions.ts` files); localizing those would need the actions to read the locale cookie.
 
 **Owner-gated** (deploy, IntaSend/AT/SMS keys, Sentry DSN, real-device test, legal, licensed imagery) — see the sections above.
