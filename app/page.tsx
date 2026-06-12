@@ -1,0 +1,182 @@
+import Link from "next/link";
+import type { Metadata } from "next";
+import { fetchExperiences } from "@/lib/experiences";
+import { ExperienceCard } from "@/components/experience-card";
+import { HeroCarousel } from "@/components/hero-carousel";
+import { Logo } from "@/components/logo";
+import { getT } from "@/lib/i18n";
+import {
+  HERO_IMAGES,
+  HERO_VIDEO_SRC,
+  OPERATOR_BAND_IMAGE,
+} from "@/lib/marketing-media";
+
+export const metadata: Metadata = {
+  title: "RoaVa — discover, book, and experience Kenya",
+  description:
+    "Discover day-trips and experiences near Nairobi, book a slot, and pay with M-Pesa. Verified operators, real reviews, and a QR ticket that works offline.",
+};
+
+// Marketing landing (public front door). The live feed lives at /discover.
+export default async function Landing() {
+  const [featured, t] = await Promise.all([
+    fetchExperiences({ upcomingOnly: true, limit: 3 }),
+    getT(),
+  ]);
+
+  return (
+    <main className="flex flex-1 flex-col">
+      {/* Hero — sunlit photo background with a slow Ken-Burns drift */}
+      <section className="relative isolate overflow-hidden">
+        <HeroCarousel images={HERO_IMAGES} videoSrc={HERO_VIDEO_SRC || undefined} />
+        {/* Warm sunset wash for brand + text contrast (white on dark passes AA) */}
+        <div className="from-ink/85 via-ink/55 to-sunset/45 absolute inset-0 -z-10 bg-gradient-to-t" />
+
+        <div className="mx-auto flex min-h-[78vh] w-full max-w-2xl flex-col justify-end gap-6 px-5 pb-14 pt-24 text-white">
+          <span className="animate-fade-up text-small/none opacity-90">
+            {t("brand_descriptor")}
+          </span>
+          <h1 className="animate-fade-up text-display [animation-delay:80ms]">
+            {t("hero_title")}
+          </h1>
+          <p className="animate-fade-up text-body max-w-md opacity-95 [animation-delay:160ms]">
+            {t("hero_body")}
+          </p>
+          <div className="animate-fade-up flex flex-wrap gap-3 [animation-delay:240ms]">
+            <Link
+              href="/discover"
+              className="bg-sunset text-accent-contrast inline-flex min-h-12 items-center justify-center rounded-base px-5 text-h3 transition-opacity duration-200 active:opacity-90"
+            >
+              {t("cta_explore")}
+            </Link>
+            <Link
+              href="/operator"
+              className="border-white/50 bg-white/10 inline-flex min-h-12 items-center justify-center rounded-base border px-5 text-h3 backdrop-blur-sm"
+            >
+              {t("cta_list_experience")}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-12 px-5 py-12">
+        {/* Why RoaVa */}
+        <section className="flex flex-col gap-5">
+          <h2 className="text-h1 text-foreground">{t("why_title")}</h2>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <ValueProp title={t("vp_mpesa_title")} body={t("vp_mpesa_body")} />
+            <ValueProp title={t("vp_trust_title")} body={t("vp_trust_body")} />
+            <ValueProp title={t("vp_local_title")} body={t("vp_local_body")} />
+          </div>
+        </section>
+
+        {/* Live preview */}
+        {featured.length > 0 ? (
+          <section className="flex flex-col gap-4">
+            <div className="flex items-end justify-between gap-3">
+              <h2 className="text-h1 text-foreground">{t("popular_title")}</h2>
+              <Link href="/discover" className="text-small text-sunset shrink-0">
+                {t("see_all")}
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3">
+              {featured.map((card) => (
+                <ExperienceCard key={card.id} card={card} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {/* How it works */}
+        <section className="flex flex-col gap-5">
+          <h2 className="text-h1 text-foreground">{t("how_title")}</h2>
+          <ol className="flex flex-col gap-4">
+            <Step n={1} title={t("step1_title")}>
+              {t("step1_body")}
+            </Step>
+            <Step n={2} title={t("step2_title")}>
+              {t("step2_body")}
+            </Step>
+            <Step n={3} title={t("step3_title")}>
+              {t("step3_body")}
+            </Step>
+          </ol>
+        </section>
+
+        {/* Operators — photo-backed band */}
+        <section className="relative isolate overflow-hidden rounded-card">
+          <div className="absolute inset-0 -z-10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={OPERATOR_BAND_IMAGE}
+              alt=""
+              loading="lazy"
+              className="animate-kenburns h-full w-full object-cover"
+            />
+            <div className="from-savanna/90 to-ink/70 absolute inset-0 bg-gradient-to-r" />
+          </div>
+          <div className="flex flex-col gap-3 p-6 text-white">
+            <h2 className="text-h2">{t("ops_title")}</h2>
+            <p className="text-body max-w-md opacity-95">{t("ops_body")}</p>
+            <Link
+              href="/operator"
+              className="bg-surface text-savanna inline-flex min-h-12 w-fit items-center justify-center rounded-base px-5 text-h3"
+            >
+              {t("nav_list")}
+            </Link>
+          </div>
+        </section>
+      </div>
+
+      {/* Footer */}
+      <footer className="border-hairline border-t">
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-5 py-8">
+          <Logo />
+          <p className="text-caption text-muted">{t("footer_blurb")}</p>
+          <nav className="flex flex-wrap gap-4">
+            <Link href="/discover" className="text-small text-foreground">
+              {t("nav_explore")}
+            </Link>
+            <Link href="/experiences" className="text-small text-foreground">
+              {t("footer_search")}
+            </Link>
+            <Link href="/operator" className="text-small text-foreground">
+              {t("nav_list")}
+            </Link>
+          </nav>
+        </div>
+      </footer>
+    </main>
+  );
+}
+
+function ValueProp({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="border-hairline rounded-card bg-surface flex flex-col gap-1.5 border p-4">
+      <h3 className="text-h3 text-foreground">{title}</h3>
+      <p className="text-small text-muted">{body}</p>
+    </div>
+  );
+}
+
+function Step({
+  n,
+  title,
+  children,
+}: {
+  n: number;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <li className="flex gap-4">
+      <span className="bg-accent-soft text-sunset text-h3 flex h-9 w-9 shrink-0 items-center justify-center rounded-full">
+        {n}
+      </span>
+      <div className="flex flex-col gap-0.5">
+        <h3 className="text-h3 text-foreground">{title}</h3>
+        <p className="text-small text-muted">{children}</p>
+      </div>
+    </li>
+  );
+}

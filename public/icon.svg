@@ -1,0 +1,7 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RoaVa">
+  <rect width="512" height="512" rx="120" fill="#D85A30"/>
+  <!-- The V from RoaVa as a peak / route mark -->
+  <path d="M150 150 L256 322 L362 150" stroke="#FAECE7" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- The brand dot (Savanna) — the destination point -->
+  <circle cx="256" cy="384" r="28" fill="#0F6E56"/>
+</svg>

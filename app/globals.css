@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+/* Class-based dark mode so users can choose (Section 8), defaulting to system below. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+  Semantic surface/text tokens that flip between light and dark.
+  Brand + status hues are defined as constants in @theme (they keep meaning
+  across modes); the Sunset accent is lightened in dark mode for contrast.
+*/
+:root {
+  --background: #f7f3ee; /* Sand — warm page surface */
+  --surface: #ffffff; /* cards, sheets */
+  --surface-raised: #ffffff;
+  --foreground: #241f1c; /* Ink — primary text */
+  --muted: #6b635d; /* secondary text — AA on Sand and white */
+  --border: #e6ded5; /* hairline borders */
+  --accent: #d85a30; /* Sunset, used for interactive accents/text */
+  --accent-contrast: #ffffff; /* text/icon on Sunset fills */
+  --accent-soft: #faece7; /* Sunset-tint fills, selected chips */
+}
+
+.dark {
+  --background: #17120f; /* deep warm near-black */
+  --surface: #211b17;
+  --surface-raised: #2a221d;
+  --foreground: #f2ede8;
+  --muted: #a89e96;
+  --border: #322a24;
+  --accent: #e8734c; /* lightened Sunset for accent text/icons on dark */
+  --accent-contrast: #1a120d;
+  --accent-soft: #3a2218; /* dark coral fill */
+}
+
+@theme {
+  /* Brand — Sunset ramp (constant hues) */
+  --color-sunset: #d85a30;
+  --color-sunset-dark: #a8482a;
+  --color-sunset-tint: #faece7;
+
+  /* Brand — Savanna (trust / secondary) */
+  --color-savanna: #0f6e56;
+
+  /* Neutrals */
+  --color-ink: #241f1c;
+  --color-sand: #f7f3ee;
+
+  /* Status — meaning-bound, paired always with an icon/label */
+  --color-success: #1d9e75;
+  --color-warning: #ef9f27;
+  --color-danger: #e24b4a;
+
+  /* Type scale (Section 1) — paired with line-heights */
+  --text-display: 2rem; /* 32px */
+  --text-display--line-height: 2.375rem; /* 38px */
+  --text-display--font-weight: 500;
+  --text-h1: 1.5rem; /* 24px */
+  --text-h1--line-height: 1.875rem;
+  --text-h1--font-weight: 500;
+  --text-h2: 1.25rem; /* 20px */
+  --text-h2--line-height: 1.625rem;
+  --text-h2--font-weight: 500;
+  --text-h3: 1rem; /* 16px */
+  --text-h3--line-height: 1.375rem;
+  --text-h3--font-weight: 500;
+  --text-body: 1rem; /* 16px */
+  --text-body--line-height: 1.5rem;
+  --text-small: 0.875rem; /* 14px */
+  --text-small--line-height: 1.25rem;
+  --text-caption: 0.75rem; /* 12px — never go below */
+  --text-caption--line-height: 1rem;
+
+  /* Radius — 8 default, 12 cards, pill chips */
+  --radius-base: 0.5rem; /* 8px */
+  --radius-card: 0.75rem; /* 12px */
+
+  /* Fonts */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Semantic tokens reference the flipping CSS variables above. */
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-accent-soft: var(--accent-soft);
+}
+
+/* Default to system preference when no .dark/.light class is set. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: #17120f;
+    --surface: #211b17;
+    --surface-raised: #2a221d;
+    --foreground: #f2ede8;
+    --muted: #a89e96;
+    --border: #322a24;
+    --accent: #e8734c;
+    --accent-contrast: #1a120d;
+    --accent-soft: #3a2218;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+}
+
+/* The single soft shadow reserved for the pay bottom-sheet (Section 7). */
+@utility shadow-sheet {
+  box-shadow: 0 -2px 24px -4px rgb(36 31 28 / 0.18);
+}
+
+/* Hairline 0.5px borders where the device supports sub-pixel rendering. */
+@utility border-hairline {
+  border-width: 0.5px;
+  border-color: var(--color-border);
+}
+
+/*
+  Marketing motion — transform/opacity only (Section 7). A slow Ken-Burns drift
+  on hero photos and a gentle fade-up entrance. Both are auto-disabled by the
+  prefers-reduced-motion rule below, and kept cheap for low-end GPUs.
+*/
+@keyframes roava-kenburns {
+  from {
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.16) translate3d(0, -1.5%, 0);
+  }
+}
+@keyframes roava-fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility animate-kenburns {
+  animation: roava-kenburns 26s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@utility animate-fade-up {
+  animation: roava-fade-up 600ms ease-out both;
+}
+
+/* Respect reduced motion globally (Section 7). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,7 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RoaVa">
+  <!-- Full-bleed background: the platform masks to circle/squircle/rounded. -->
+  <rect width="512" height="512" fill="#D85A30"/>
+  <!-- Mark kept within the central safe zone so masking never clips it. -->
+  <path d="M188 185 L256 296 L324 185" stroke="#FAECE7" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="256" cy="338" r="21" fill="#0F6E56"/>
+</svg>
