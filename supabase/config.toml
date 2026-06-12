@@ -243,6 +243,17 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# Email sign-in is CODE-based (6-digit OTP) to match the app UI. This template
+# surfaces {{ .Token }} so the email shows the code, not just a magic link.
+# NOTE (cloud/prod): hosted Supabase reads templates from the dashboard, not this
+# file unless you run `supabase config push` against a linked project. So on prod
+# also paste this body into Auth → Emails → Templates → "Magic link or OTP", and
+# keep Auth → Sign In/Providers → "Confirm email" OFF (otherwise new users get the
+# signup-confirmation LINK + a `signup`-type token the code box can't verify).
+[auth.email.template.magic_link]
+subject = "Your RoaVa sign-in code"
+content_path = "./supabase/templates/magic_link.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

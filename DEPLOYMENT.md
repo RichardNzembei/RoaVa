@@ -46,6 +46,30 @@ Set these in Vercel (Project → Settings → Environment Variables). Local dev 
 4. Copy the project URL, anon key, and service-role key into Vercel env.
 5. Regenerate types after schema changes: `pnpm db:types`.
 
+### 2a. Email + Google sign-in (alternatives to phone)
+
+The app also supports **email-OTP** and **Google OAuth** (see `app/sign-in/`, `app/auth/callback`).
+Hosted Supabase keeps auth config in the **dashboard**, not `config.toml`, so set these there
+(or `supabase config push` from a linked project):
+
+- **Email (6-digit code):**
+  - Auth → Sign In/Providers → **"Confirm email" OFF**. With it ON, new users get the
+    *Confirm sign up* (link) template and a `signup`-type token the app's code box can't verify.
+  - Auth → Emails → Templates → **"Magic link or OTP"** → paste the body from
+    `supabase/templates/magic_link.html` (must include `{{ .Token }}`, the 6-digit code).
+    The default template is link-only and never shows a code.
+  - Auth → Emails → SMTP Settings → enable custom SMTP. **Use a transactional provider for real
+    users** (Resend needs a verified domain; SendGrid/Brevo allow single-sender verification).
+    Gmail SMTP works for testing/low volume only (Supabase flags it; ~personal-sender limits).
+- **Google OAuth:**
+  - Google Cloud → Credentials → OAuth client (Web). Authorized redirect URI =
+    `https://<project-ref>.supabase.co/auth/v1/callback`.
+  - Auth → Providers → Google → enable + paste Client ID/Secret.
+  - Auth → URL Configuration → **Site URL** = the prod origin; add `<origin>/auth/callback`
+    (and `http://localhost:3100/auth/callback`) to **Redirect URLs**.
+- After any provider/email signup, role stays `consumer`; operators self-onboard via
+  **/operator** ("List with RoaVa"), which flips the role server-side (`becomeOperator`).
+
 ## 3. Vercel
 
 1. Import the repo; framework auto-detects Next.js.
