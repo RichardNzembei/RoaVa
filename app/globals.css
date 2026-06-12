@@ -205,6 +205,36 @@ body {
   animation: roava-fade-up 600ms ease-out both;
 }
 
+/* Celebratory confirmation — a badge that pops in with a one-shot ring burst.
+   Scale-based (never gates visibility to invisible); reduced-motion snaps it. */
+@keyframes roava-pop {
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes roava-burst {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+@utility animate-pop {
+  animation: roava-pop 480ms var(--ease-out-soft) both;
+}
+@utility animate-burst {
+  animation: roava-burst 900ms ease-out forwards;
+}
+
 /* Respect reduced motion globally (Section 7). */
 @media (prefers-reduced-motion: reduce) {
   *,

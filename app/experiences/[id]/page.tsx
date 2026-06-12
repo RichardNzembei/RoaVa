@@ -8,6 +8,7 @@ import { experienceImageUrl, reviewImageUrl } from "@/lib/storage";
 import { getT } from "@/lib/i18n";
 import { StarRating } from "@/components/star-rating";
 import { Reveal } from "@/components/reveal";
+import { ParallaxImage } from "@/components/parallax-image";
 import { SlotPicker } from "./slot-picker";
 import { WishlistButton } from "./wishlist-button";
 
@@ -95,13 +96,7 @@ export default async function ExperienceDetailPage({
       {/* Immersive hero — full-bleed cover with the title/meta overlaid. */}
       <section className="from-sunset/30 to-savanna/30 relative isolate flex min-h-[60vh] flex-col overflow-hidden bg-gradient-to-br text-white">
         {exp.images.length > 0 ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={experienceImageUrl(exp.images[0])}
-            alt=""
-            fetchPriority="high"
-            className="animate-kenburns absolute inset-0 -z-10 h-full w-full object-cover"
-          />
+          <ParallaxImage src={experienceImageUrl(exp.images[0])} />
         ) : null}
         <div className="from-ink/95 via-ink/80 absolute inset-0 -z-10 bg-gradient-to-t from-0% via-40% to-transparent to-90%" />
 

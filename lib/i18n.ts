@@ -96,6 +96,13 @@ const en = {
   discover_all: "All experiences",
   discover_all_sub: "Fresh finds near you",
   discover_empty: "Nothing here yet — check back soon.",
+  lead_from: "from",
+  per_person: "/ person",
+  verified_badge: "Verified",
+  ticket_ref: "Booking ref",
+  ticket_note:
+    "Show this QR at the meeting point. It works offline — keep this page open. Each ticket can be used once.",
+  ticket_preparing: "Your ticket is being prepared. Refresh in a moment.",
 
   // tickets
   tickets_title: "Your tickets",
@@ -543,6 +550,13 @@ const sw: Record<TranslationKey, string> = {
   discover_all: "Matukio yote",
   discover_all_sub: "Mapya karibu nawe",
   discover_empty: "Hakuna kitu bado — angalia tena hivi karibuni.",
+  lead_from: "kuanzia",
+  per_person: "/ mtu",
+  verified_badge: "Imethibitishwa",
+  ticket_ref: "Kumbukumbu ya nafasi",
+  ticket_note:
+    "Onyesha QR hii mahali pa kukutana. Inafanya kazi bila intaneti — acha ukurasa huu wazi. Kila tikiti hutumika mara moja.",
+  ticket_preparing: "Tikiti yako inaandaliwa. Onyesha upya baada ya muda.",
 
   tickets_title: "Tikiti zako",
   tickets_empty_title: "Hakuna tikiti bado",

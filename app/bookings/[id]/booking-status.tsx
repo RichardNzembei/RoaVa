@@ -144,10 +144,18 @@ export function BookingStatus({
   if (data.status === "confirmed") {
     return (
       <div className="flex flex-col items-center gap-4 text-center">
-        <div className="bg-success/15 text-success flex h-16 w-16 items-center justify-center rounded-full text-h1">
-          ✓
+        <div className="relative flex h-20 w-20 items-center justify-center">
+          <span
+            aria-hidden
+            className="bg-success/30 motion-safe:animate-burst absolute inset-0 rounded-full"
+          />
+          <span className="bg-success/15 text-success text-display motion-safe:animate-pop relative flex h-20 w-20 items-center justify-center rounded-full">
+            ✓
+          </span>
         </div>
-        <h1 className="text-h1 text-foreground">{labels.confirmedTitle}</h1>
+        <h1 className="text-display text-foreground motion-safe:animate-fade-up">
+          {labels.confirmedTitle}
+        </h1>
         <p className="text-body text-muted">
           {labels.confirmedBody
             .replace("{title}", title)

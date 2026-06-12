@@ -2,6 +2,7 @@ import Link from "next/link";
 import { fetchExperiences } from "@/lib/experiences";
 import { getT } from "@/lib/i18n";
 import { ExperienceCard } from "@/components/experience-card";
+import { FeaturedCard } from "@/components/featured-card";
 import { CategoryChips } from "@/components/category-chips";
 
 // Server-rendered discovery feed. Reads only published experiences (RLS).
@@ -33,14 +34,37 @@ export default async function Discover() {
       </section>
 
       {thisWeek.length > 0 ? (
-        <FeedSection
-          title={t("discover_this_week")}
-          subtitle={t("discover_this_week_sub")}
-          cards={thisWeek}
-          href="/experiences?when=week"
-          seeAll={t("see_all")}
-          empty={t("discover_empty")}
-        />
+        <section className="flex flex-col gap-4">
+          <div className="flex items-end justify-between gap-3">
+            <div className="flex flex-col gap-0.5">
+              <h2 className="text-h2 text-foreground">
+                {t("discover_this_week")}
+              </h2>
+              <p className="text-small text-muted">
+                {t("discover_this_week_sub")}
+              </p>
+            </div>
+            <Link
+              href="/experiences?when=week"
+              className="text-small text-sunset shrink-0"
+            >
+              {t("see_all")}
+            </Link>
+          </div>
+          <FeaturedCard
+            card={thisWeek[0]}
+            fromLabel={t("lead_from")}
+            perPerson={t("per_person")}
+            verifiedLabel={t("verified_badge")}
+          />
+          {thisWeek.length > 1 ? (
+            <div className="grid grid-cols-2 gap-x-4 gap-y-6">
+              {thisWeek.slice(1).map((card, i) => (
+                <ExperienceCard key={card.id} card={card} index={i} />
+              ))}
+            </div>
+          ) : null}
+        </section>
       ) : null}
 
       <FeedSection
