@@ -18,9 +18,13 @@ export const publicEnv = {
     "NEXT_PUBLIC_SUPABASE_URL",
     process.env.NEXT_PUBLIC_SUPABASE_URL,
   ),
+  // The Supabase Vercel integration injects the newer `PUBLISHABLE_KEY` name;
+  // classic projects / local dev use `ANON_KEY`. Accept either — both are the
+  // public client key and supabase-js treats them interchangeably.
   supabaseAnonKey: required(
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   ),
   // Canonical site origin for SEO (sitemap, robots, canonical, JSON-LD).
   siteUrl: (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(
@@ -33,11 +37,15 @@ export const publicEnv = {
 // build time because the values are undefined in the browser bundle; the
 // `server-only` guard in the consuming modules is the real enforcement.
 export const serverEnv = {
-  /** Bypasses RLS — payment/webhook writes only. NEVER send to the client. */
+  /**
+   * Bypasses RLS — payment/webhook writes only. NEVER send to the client.
+   * The Supabase Vercel integration injects this as `SUPABASE_SECRET_KEY`
+   * (newer naming); classic projects / local dev use `SUPABASE_SERVICE_ROLE_KEY`.
+   */
   supabaseServiceRoleKey: () =>
     required(
-      "SUPABASE_SERVICE_ROLE_KEY",
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      "SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SECRET_KEY",
+      process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY,
     ),
   /** HMAC secret for signing single-use ticket QR payloads (Section 4.4). */
   ticketSigningSecret: () =>
