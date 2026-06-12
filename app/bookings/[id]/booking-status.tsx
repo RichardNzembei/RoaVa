@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { buttonClasses } from "@/components/ui/button";
+import { captureEvent } from "@/components/analytics";
 
 type StatusResponse = {
   status: string;
@@ -113,6 +114,18 @@ export function BookingStatus({
       if (timer.current) clearInterval(timer.current);
     };
   }, [poll, settled]);
+
+  // Analytics: fire the conversion outcome once it settles (no-op without a key).
+  useEffect(() => {
+    if (data.status === "confirmed") {
+      captureEvent("booking_confirmed", { booking_id: bookingId });
+    } else if (data.status === "cancelled") {
+      captureEvent("booking_failed", {
+        booking_id: bookingId,
+        reason: data.failureReason ?? "unknown",
+      });
+    }
+  }, [data.status, data.failureReason, bookingId]);
 
   // Countdown for the prompt window (display only).
   useEffect(() => {

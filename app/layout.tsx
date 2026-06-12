@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar";
 import { SiteHeader } from "@/components/site-header";
+import { Analytics } from "@/components/analytics";
 
 // Humanist sans, two weights only (400/500) to keep rendering crisp and the
 // bundle light on low-end Android (Section 1 + performance budget).
@@ -58,6 +60,9 @@ export default function RootLayout({
         <SiteHeader />
         {children}
         <ServiceWorkerRegistrar />
+        <Suspense fallback={null}>
+          <Analytics />
+        </Suspense>
       </body>
     </html>
   );

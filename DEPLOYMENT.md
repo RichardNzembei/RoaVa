@@ -24,6 +24,7 @@ Set these in Vercel (Project → Settings → Environment Variables). Local dev 
 | `AT_USERNAME` / `AT_API_KEY` / `AT_SENDER_ID` | server | Africa's Talking transactional SMS. Absent → SMS is logged, not sent. |
 | `NEXT_PUBLIC_FALLBACK_PAYBILL` | public | manual M-Pesa Paybill shown after repeated STK failure |
 | `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` | server / public | optional error monitoring (see §6) |
+| `NEXT_PUBLIC_POSTHOG_KEY` / `NEXT_PUBLIC_POSTHOG_HOST` | public | optional product analytics. Empty → fully disabled (no tracking, posthog-js never loads). Privacy-safe when on (no autocapture/session-recording, respects DNT, anonymous events). **Confirm a consent/privacy stance before enabling (§7 / §11).** |
 
 ---
 
@@ -151,6 +152,8 @@ end-to-end against the mock; live IntaSend B2C wiring + real-money test are owne
 - ~~Image fallback hardening~~ **Done** — `<ExperienceImage>` degrades to a letter-placeholder
   on load error (no broken frame/alt text).
 - ~~Lint cleanup~~ **Done** — `pnpm lint` is at 0 errors.
-- Product analytics (**PostHog**) — wiring is buildable; needs an owner key.
+- ~~Product analytics (**PostHog**)~~ **Wired** — privacy-safe, opt-in via
+  `NEXT_PUBLIC_POSTHOG_KEY` (inert until set). Captures pageviews + `booking_confirmed`/
+  `booking_failed`. Owner sets the key after deciding the consent/privacy stance.
 
 **Owner-gated** (deploy, IntaSend/AT/SMS keys, Sentry DSN, real-device test, legal, licensed imagery) — see the sections above.
