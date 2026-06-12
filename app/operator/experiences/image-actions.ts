@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireOperator } from "@/lib/auth";
 import { EXPERIENCE_IMAGES_BUCKET } from "@/lib/storage";
+import { getT } from "@/lib/i18n";
 
 const MAX_IMAGES = 8;
 
@@ -11,9 +12,10 @@ const MAX_IMAGES = 8;
 // upload itself happens client-side under storage RLS; this records the key.
 export async function attachImage(experienceId: string, objectKey: string) {
   const operator = await requireOperator();
+  const t = await getT();
   // Defend the path convention: key must live under this operator's folder.
   if (!objectKey.startsWith(`${operator.id}/${experienceId}/`)) {
-    return { ok: false as const, message: "Unexpected upload path." };
+    return { ok: false as const, message: t("err_img_path") };
   }
 
   const supabase = await createClient();
@@ -22,19 +24,19 @@ export async function attachImage(experienceId: string, objectKey: string) {
     .select("images")
     .eq("id", experienceId)
     .maybeSingle();
-  if (!exp) return { ok: false as const, message: "Experience not found." };
+  if (!exp) return { ok: false as const, message: t("err_exp_notfound") };
 
   const images = exp.images ?? [];
   if (images.includes(objectKey)) return { ok: true as const };
   if (images.length >= MAX_IMAGES) {
-    return { ok: false as const, message: `Up to ${MAX_IMAGES} photos.` };
+    return { ok: false as const, message: t("err_img_max").replace("{n}", String(MAX_IMAGES)) };
   }
 
   const { error } = await supabase
     .from("experiences")
     .update({ images: [...images, objectKey] })
     .eq("id", experienceId);
-  if (error) return { ok: false as const, message: "Couldn't save the photo." };
+  if (error) return { ok: false as const, message: t("err_img_save") };
 
   revalidatePath(`/operator/experiences/${experienceId}`);
   return { ok: true as const };

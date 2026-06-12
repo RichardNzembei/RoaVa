@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getT } from "@/lib/i18n";
 
 export type BecomeOperatorState =
   | { status: "idle" }
@@ -15,12 +16,13 @@ export async function becomeOperator(
   _prev: BecomeOperatorState,
   formData: FormData,
 ): Promise<BecomeOperatorState> {
+  const t = await getT();
   const businessName = String(formData.get("business_name") ?? "").trim();
   if (businessName.length < 2) {
-    return { status: "error", message: "Enter your business name." };
+    return { status: "error", message: t("err_biz_empty") };
   }
   if (businessName.length > 120) {
-    return { status: "error", message: "That business name is too long." };
+    return { status: "error", message: t("err_biz_long") };
   }
 
   // Identify the user under their own session (never trust a client-sent id).
@@ -44,10 +46,7 @@ export async function becomeOperator(
       .from("operators")
       .insert({ owner_profile_id: user.id, business_name: businessName });
     if (insertError) {
-      return {
-        status: "error",
-        message: "We couldn't set up your operator account. Please try again.",
-      };
+      return { status: "error", message: t("err_op_setup") };
     }
   }
 
@@ -56,10 +55,7 @@ export async function becomeOperator(
     .update({ role: "operator" })
     .eq("id", user.id);
   if (roleError) {
-    return {
-      status: "error",
-      message: "We couldn't finish setup. Please try again.",
-    };
+    return { status: "error", message: t("err_op_finish") };
   }
 
   redirect("/operator");

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeKenyanPhone } from "@/lib/phone";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { getT } from "@/lib/i18n";
 
 export type OtpRequestState =
   | { status: "idle" }
@@ -20,13 +21,11 @@ export async function requestOtp(
   _prev: OtpRequestState,
   formData: FormData,
 ): Promise<OtpRequestState> {
+  const t = await getT();
   const raw = String(formData.get("phone") ?? "");
   const phone = normalizeKenyanPhone(raw);
   if (!phone) {
-    return {
-      status: "error",
-      message: "Enter a valid Kenyan phone number, e.g. 0712 345 678.",
-    };
+    return { status: "error", message: t("err_phone_invalid") };
   }
 
   // Cap OTP sends to protect against SMS-cost abuse (per number and per IP).
@@ -36,10 +35,7 @@ export async function requestOtp(
     rateLimit(`otp_ip:${ip}`, 20, 900),
   ]);
   if (!byPhone.allowed || !byIp.allowed) {
-    return {
-      status: "error",
-      message: "Too many code requests. Please wait a few minutes and try again.",
-    };
+    return { status: "error", message: t("err_otp_ratelimit") };
   }
 
   const supabase = await createClient();
@@ -49,11 +45,7 @@ export async function requestOtp(
   });
 
   if (error) {
-    return {
-      status: "error",
-      message:
-        "We couldn't send the code. Check the number and try again in a moment.",
-    };
+    return { status: "error", message: t("err_otp_send") };
   }
 
   return { status: "sent", phone };
@@ -65,12 +57,13 @@ export async function verifyOtp(
   _prev: OtpVerifyState,
   formData: FormData,
 ): Promise<OtpVerifyState> {
+  const t = await getT();
   const phone = String(formData.get("phone") ?? "");
   const token = String(formData.get("token") ?? "").trim();
   const next = String(formData.get("next") ?? "");
 
   if (!/^\d{4,8}$/.test(token)) {
-    return { status: "error", message: "Enter the code we sent you." };
+    return { status: "error", message: t("err_otp_empty") };
   }
 
   const supabase = await createClient();
@@ -81,10 +74,7 @@ export async function verifyOtp(
   });
 
   if (error) {
-    return {
-      status: "error",
-      message: "That code didn't work. Check it or request a new one.",
-    };
+    return { status: "error", message: t("err_otp_bad") };
   }
 
   // Decide where to land based on whether the name is set yet.

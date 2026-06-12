@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n";
 
 export type NameState =
   | { status: "idle" }
@@ -14,18 +15,19 @@ export async function updateName(
   _prev: NameState,
   formData: FormData,
 ): Promise<NameState> {
+  const t = await getT();
   const name = String(formData.get("name") ?? "").trim();
-  if (name.length < 2) return { status: "error", message: "Please enter your name." };
-  if (name.length > 80) return { status: "error", message: "That name is too long." };
+  if (name.length < 2) return { status: "error", message: t("err_name_empty") };
+  if (name.length > 80) return { status: "error", message: t("err_name_long") };
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { status: "error", message: "Please sign in again." };
+  if (!user) return { status: "error", message: t("err_signin_again") };
 
   const { error } = await supabase.from("profiles").update({ name }).eq("id", user.id);
-  if (error) return { status: "error", message: "We couldn't save that." };
+  if (error) return { status: "error", message: t("err_save_retry") };
 
   revalidatePath("/account");
   return { status: "saved" };

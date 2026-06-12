@@ -2,6 +2,7 @@ import Link from "next/link";
 import { experienceImageUrl } from "@/lib/storage";
 import { formatKes, formatSlotDateTime } from "@/lib/format";
 import { StarRating } from "@/components/star-rating";
+import { ExperienceImage } from "@/components/experience-image";
 import type { ExperienceCard as Card } from "@/lib/experiences";
 
 export function ExperienceCard({ card }: { card: Card }) {
@@ -12,10 +13,9 @@ export function ExperienceCard({ card }: { card: Card }) {
     >
       <div className="bg-accent-soft relative aspect-[4/3] overflow-hidden rounded-card">
         {card.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <ExperienceImage
             src={experienceImageUrl(card.image)}
-            alt=""
+            fallbackChar={card.title.charAt(0).toUpperCase()}
             loading="lazy"
             className="h-full w-full object-cover"
           />

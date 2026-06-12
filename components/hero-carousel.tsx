@@ -40,7 +40,9 @@ export function HeroCarousel({
       INTERVAL_MS,
     );
 
-    // Only enhance with video on a fast, non-data-saving, motion-OK connection.
+    // Only enhance with video on a fast, non-data-saving, motion-OK connection —
+    // a one-time post-mount decision from client-only connection hints.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (videoSrc && fast && !saveData) setShowVideo(true);
 
     return () => clearInterval(t);

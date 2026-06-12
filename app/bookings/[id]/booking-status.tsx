@@ -105,6 +105,8 @@ export function BookingStatus({
       if (timer.current) clearInterval(timer.current);
       return;
     }
+    // Kick off + schedule the status poll; state updates happen async after fetch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     poll();
     timer.current = setInterval(poll, 3000);
     return () => {

@@ -28,7 +28,10 @@ export function ThemeToggle({ label }: { label: string }) {
   const [theme, setTheme] = useState<Theme>("system");
 
   useEffect(() => {
+    // Post-mount read of a client-only store (localStorage is unavailable during
+    // SSR), so syncing state here is intentional and runs once.
     const stored = localStorage.getItem("roava-theme");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(stored === "dark" ? "dark" : stored === "light" ? "light" : "system");
   }, []);
 

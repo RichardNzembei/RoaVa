@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/text-field";
@@ -77,6 +77,8 @@ export function SlotManager({
   const [state, formAction] = useActionState<SlotFormState, FormData>(action, {
     status: "idle",
   });
+  // Snapshot "now" once (lazy init) so past-slot styling stays pure during render.
+  const [nowMs] = useState(() => Date.now());
 
   return (
     <div className="flex flex-col gap-5">
@@ -131,7 +133,7 @@ export function SlotManager({
       ) : (
         <ul className="flex flex-col gap-2">
           {slots.map((slot) => {
-            const past = new Date(slot.start_at).getTime() < Date.now();
+            const past = new Date(slot.start_at).getTime() < nowMs;
             return (
               <li
                 key={slot.id}

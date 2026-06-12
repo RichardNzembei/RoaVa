@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getPaymentProvider, commissionKes } from "@/lib/payments";
 import { normalizeKenyanPhone } from "@/lib/phone";
 import { rateLimit } from "@/lib/rate-limit";
+import { getT } from "@/lib/i18n";
 
 export type StartBookingInput = {
   experienceId: string;
@@ -29,22 +30,20 @@ export type StartBookingResult =
 export async function startBooking(
   input: StartBookingInput,
 ): Promise<StartBookingResult> {
+  const t = await getT();
   const phone = normalizeKenyanPhone(input.phoneRaw);
   if (!phone) {
-    return { ok: false, error: "Enter a valid M-Pesa number, e.g. 0712 345 678." };
+    return { ok: false, error: t("err_msisdn_invalid") };
   }
   const partySize = Math.trunc(input.partySize);
   if (!Number.isInteger(partySize) || partySize < 1) {
-    return { ok: false, error: "Choose at least one guest." };
+    return { ok: false, error: t("err_book_guests") };
   }
 
   // Throttle booking initiation per consumer (prevents STK-spam / capacity churn).
   const limit = await rateLimit(`book:${input.consumerProfileId}`, 8, 600);
   if (!limit.allowed) {
-    return {
-      ok: false,
-      error: "You've started a lot of bookings. Please wait a moment and try again.",
-    };
+    return { ok: false, error: t("err_book_ratelimit") };
   }
 
   const service = createServiceClient();
@@ -56,10 +55,10 @@ export async function startBooking(
     .eq("id", input.slotId)
     .maybeSingle();
   if (!slot || slot.experience_id !== input.experienceId) {
-    return { ok: false, error: "That time slot wasn't found." };
+    return { ok: false, error: t("err_book_slot_notfound") };
   }
   if (slot.status !== "open" || new Date(slot.start_at).getTime() <= Date.now()) {
-    return { ok: false, error: "That time slot is no longer available." };
+    return { ok: false, error: t("err_book_slot_unavail") };
   }
 
   const { data: exp } = await service
@@ -68,12 +67,12 @@ export async function startBooking(
     .eq("id", input.experienceId)
     .maybeSingle();
   if (!exp || exp.status !== "published") {
-    return { ok: false, error: "This experience isn't available right now." };
+    return { ok: false, error: t("err_book_exp_unavail") };
   }
   if (partySize > exp.max_party_size) {
     return {
       ok: false,
-      error: `Up to ${exp.max_party_size} guests per booking.`,
+      error: t("err_book_maxparty").replace("{n}", String(exp.max_party_size)),
     };
   }
 
@@ -90,13 +89,10 @@ export async function startBooking(
     { p_slot_id: input.slotId, p_qty: partySize },
   );
   if (reserveErr) {
-    return { ok: false, error: "Something went wrong. Please try again." };
+    return { ok: false, error: t("err_book_generic") };
   }
   if (reserved !== true) {
-    return {
-      ok: false,
-      error: "Sorry — those seats were just taken. Pick another date.",
-    };
+    return { ok: false, error: t("err_book_taken") };
   }
 
   // Create the pending booking. From here, any early return must release.
@@ -116,7 +112,7 @@ export async function startBooking(
 
   if (bookingErr || !booking) {
     await service.rpc("release_slot", { p_slot_id: input.slotId, p_qty: partySize });
-    return { ok: false, error: "Couldn't start your booking. Please try again." };
+    return { ok: false, error: t("err_book_start") };
   }
 
   const { data: payment, error: payErr } = await service
@@ -133,7 +129,7 @@ export async function startBooking(
   if (payErr || !payment) {
     await service.from("bookings").update({ status: "cancelled" }).eq("id", booking.id);
     await service.rpc("release_slot", { p_slot_id: input.slotId, p_qty: partySize });
-    return { ok: false, error: "Couldn't start payment. Please try again." };
+    return { ok: false, error: t("err_book_paystart") };
   }
 
   // Initiate STK. "Accepted" only means the prompt was sent (§4.2).
@@ -151,10 +147,7 @@ export async function startBooking(
       .eq("id", payment.id);
     await service.from("bookings").update({ status: "cancelled" }).eq("id", booking.id);
     await service.rpc("release_slot", { p_slot_id: input.slotId, p_qty: partySize });
-    return {
-      ok: false,
-      error: "We couldn't reach M-Pesa. Please try again in a moment.",
-    };
+    return { ok: false, error: t("err_book_mpesa") };
   }
 
   await service

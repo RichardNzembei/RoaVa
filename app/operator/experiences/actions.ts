@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireOperator } from "@/lib/auth";
 import { isCategory, isCounty } from "@/lib/catalog";
+import { getT } from "@/lib/i18n";
 
 export type FormState = { status: "idle" } | { status: "error"; message: string };
 
@@ -23,16 +24,17 @@ export async function createExperience(
   formData: FormData,
 ): Promise<FormState> {
   const operator = await requireOperator();
+  const t = await getT();
 
   const title = String(formData.get("title") ?? "").trim();
   const category = String(formData.get("category") ?? "").trim();
   const county = String(formData.get("county") ?? "").trim();
   const price = parsePrice(formData.get("base_price_kes"));
 
-  if (title.length < 3) return { status: "error", message: "Give your experience a title." };
-  if (!isCategory(category)) return { status: "error", message: "Choose a category." };
-  if (!isCounty(county)) return { status: "error", message: "Choose a county." };
-  if (price === null) return { status: "error", message: "Enter a valid price in KES." };
+  if (title.length < 3) return { status: "error", message: t("err_exp_title") };
+  if (!isCategory(category)) return { status: "error", message: t("err_exp_category") };
+  if (!isCounty(county)) return { status: "error", message: t("err_exp_county") };
+  if (price === null) return { status: "error", message: t("err_exp_price") };
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -49,7 +51,7 @@ export async function createExperience(
     .single();
 
   if (error || !data) {
-    return { status: "error", message: "We couldn't create that. Please try again." };
+    return { status: "error", message: t("err_exp_create") };
   }
 
   redirect(`/operator/experiences/${data.id}`);
@@ -62,6 +64,7 @@ export async function updateExperience(
   formData: FormData,
 ): Promise<FormState> {
   await requireOperator();
+  const t = await getT();
 
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
@@ -74,18 +77,18 @@ export async function updateExperience(
   const durationRaw = String(formData.get("duration_minutes") ?? "").trim();
   const partyRaw = String(formData.get("max_party_size") ?? "").trim();
 
-  if (title.length < 3) return { status: "error", message: "Give your experience a title." };
-  if (!isCategory(category)) return { status: "error", message: "Choose a category." };
-  if (!isCounty(county)) return { status: "error", message: "Choose a county." };
-  if (price === null) return { status: "error", message: "Enter a valid price in KES." };
+  if (title.length < 3) return { status: "error", message: t("err_exp_title") };
+  if (!isCategory(category)) return { status: "error", message: t("err_exp_category") };
+  if (!isCounty(county)) return { status: "error", message: t("err_exp_county") };
+  if (price === null) return { status: "error", message: t("err_exp_price") };
 
   const duration = durationRaw ? Number(durationRaw) : null;
   if (duration !== null && (!Number.isInteger(duration) || duration <= 0)) {
-    return { status: "error", message: "Duration must be a whole number of minutes." };
+    return { status: "error", message: t("err_exp_duration") };
   }
   const maxParty = partyRaw ? Number(partyRaw) : 10;
   if (!Number.isInteger(maxParty) || maxParty <= 0) {
-    return { status: "error", message: "Max party size must be a positive whole number." };
+    return { status: "error", message: t("err_exp_maxparty") };
   }
 
   // RLS (owns_experience) scopes this to the operator's own row.
@@ -106,7 +109,7 @@ export async function updateExperience(
     })
     .eq("id", experienceId);
 
-  if (error) return { status: "error", message: "We couldn't save changes. Please try again." };
+  if (error) return { status: "error", message: t("err_exp_save") };
 
   revalidatePath(`/operator/experiences/${experienceId}`);
   return { status: "idle" };
@@ -119,6 +122,7 @@ export async function publishExperience(
   _formData: FormData,
 ): Promise<FormState> {
   await requireOperator();
+  const t = await getT();
   const supabase = await createClient();
 
   const { data: exp } = await supabase
@@ -127,12 +131,12 @@ export async function publishExperience(
     .eq("id", experienceId)
     .maybeSingle();
 
-  if (!exp) return { status: "error", message: "Experience not found." };
+  if (!exp) return { status: "error", message: t("err_exp_notfound") };
   if (!exp.images || exp.images.length === 0) {
-    return { status: "error", message: "Add at least one photo before publishing." };
+    return { status: "error", message: t("err_exp_photo") };
   }
   if (!exp.meeting_point) {
-    return { status: "error", message: "Add a meeting point before publishing." };
+    return { status: "error", message: t("err_exp_meeting") };
   }
 
   const { count } = await supabase
@@ -143,7 +147,7 @@ export async function publishExperience(
     .gt("start_at", new Date().toISOString());
 
   if (!count || count === 0) {
-    return { status: "error", message: "Add at least one upcoming time slot before publishing." };
+    return { status: "error", message: t("err_exp_slotreq") };
   }
 
   const { error } = await supabase
@@ -151,7 +155,7 @@ export async function publishExperience(
     .update({ status: "published" })
     .eq("id", experienceId);
 
-  if (error) return { status: "error", message: "We couldn't publish. Please try again." };
+  if (error) return { status: "error", message: t("err_exp_publish") };
 
   revalidatePath(`/operator/experiences/${experienceId}`);
   revalidatePath("/operator");

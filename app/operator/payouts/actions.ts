@@ -5,6 +5,7 @@ import { requireOperator } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeKenyanPhone } from "@/lib/phone";
 import { startPayout } from "@/lib/payouts";
+import { getT } from "@/lib/i18n";
 
 export type PayoutNumberState =
   | { status: "idle" }
@@ -18,13 +19,11 @@ export async function savePayoutNumber(
   _prev: PayoutNumberState,
   formData: FormData,
 ): Promise<PayoutNumberState> {
+  const t = await getT();
   const operator = await requireOperator();
   const phone = normalizeKenyanPhone(String(formData.get("payout_msisdn") ?? ""));
   if (!phone) {
-    return {
-      status: "error",
-      message: "Enter a valid M-Pesa number, e.g. 0712 345 678.",
-    };
+    return { status: "error", message: t("err_msisdn_invalid") };
   }
 
   const supabase = await createClient();
@@ -33,7 +32,7 @@ export async function savePayoutNumber(
     .upsert({ operator_id: operator.id, payout_msisdn: phone });
 
   if (error) {
-    return { status: "error", message: "We couldn't save that. Please try again." };
+    return { status: "error", message: t("err_save_retry") };
   }
 
   revalidatePath("/operator/payouts");

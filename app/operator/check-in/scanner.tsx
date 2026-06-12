@@ -80,6 +80,8 @@ export function CheckInScanner({ labels }: { labels: ScannerLabels }) {
   const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
+    // Post-mount feature detection (BarcodeDetector is a client-only API).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCanScan(typeof window !== "undefined" && "BarcodeDetector" in window);
   }, []);
 

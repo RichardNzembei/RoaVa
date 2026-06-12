@@ -7,6 +7,7 @@ import { publicEnv } from "@/lib/env";
 import { experienceImageUrl, reviewImageUrl } from "@/lib/storage";
 import { getT } from "@/lib/i18n";
 import { StarRating } from "@/components/star-rating";
+import { ExperienceImage } from "@/components/experience-image";
 import { SlotPicker } from "./slot-picker";
 import { WishlistButton } from "./wishlist-button";
 
@@ -97,10 +98,10 @@ export default async function ExperienceDetailPage({
       {exp.images.length > 0 ? (
         <div className="flex flex-col gap-2">
           <div className="bg-accent-soft aspect-[4/3] overflow-hidden rounded-card">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <ExperienceImage
               src={experienceImageUrl(exp.images[0])}
               alt={exp.title}
+              fallbackChar={exp.title.charAt(0).toUpperCase()}
               className="h-full w-full object-cover"
             />
           </div>
