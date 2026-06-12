@@ -16,7 +16,8 @@
   --muted: #6b635d; /* secondary text — AA on Sand and white */
   --border: #e6ded5; /* hairline borders */
   --accent: #d85a30; /* Sunset, used for interactive accents/text */
-  --accent-contrast: #ffffff; /* text/icon on Sunset fills */
+  --accent-strong: #a8482a; /* Sunset-dark — button/chip FILLS so white text hits WCAG AA (5.8:1) */
+  --accent-contrast: #ffffff; /* text/icon on accent-strong fills */
   --accent-soft: #faece7; /* Sunset-tint fills, selected chips */
 }
 
@@ -28,6 +29,7 @@
   --muted: #a89e96;
   --border: #322a24;
   --accent: #e8734c; /* lightened Sunset for accent text/icons on dark */
+  --accent-strong: #d85a30; /* Sunset fill — dark contrast text on it is 4.65:1 (AA) */
   --accent-contrast: #1a120d;
   --accent-soft: #3a2218; /* dark coral fill */
 }
@@ -87,6 +89,7 @@
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
   --color-accent-contrast: var(--accent-contrast);
   --color-accent-soft: var(--accent-soft);
 }
@@ -101,6 +104,7 @@
     --muted: #a89e96;
     --border: #322a24;
     --accent: #e8734c;
+    --accent-strong: #d85a30;
     --accent-contrast: #1a120d;
     --accent-soft: #3a2218;
   }

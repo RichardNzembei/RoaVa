@@ -17,12 +17,12 @@ export function LanguageToggle({ locale }: { locale: Locale }) {
   }
 
   return (
-    <div className="text-caption flex items-center gap-1" aria-label="Language">
+    <div className="text-caption flex h-full items-center" aria-label="Language">
       <button
         type="button"
         onClick={() => set("en")}
         aria-pressed={locale === "en"}
-        className={locale === "en" ? "text-sunset" : "text-muted"}
+        className={`flex h-full items-center px-1.5 ${locale === "en" ? "text-sunset" : "text-muted"}`}
       >
         EN
       </button>
@@ -31,7 +31,7 @@ export function LanguageToggle({ locale }: { locale: Locale }) {
         type="button"
         onClick={() => set("sw")}
         aria-pressed={locale === "sw"}
-        className={locale === "sw" ? "text-sunset" : "text-muted"}
+        className={`flex h-full items-center px-1.5 ${locale === "sw" ? "text-sunset" : "text-muted"}`}
       >
         SW
       </button>

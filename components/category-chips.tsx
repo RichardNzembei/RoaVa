@@ -13,7 +13,7 @@ export function CategoryChips({ active }: { active?: string }) {
             href={`/experiences?category=${encodeURIComponent(c)}`}
             className={`text-small shrink-0 rounded-full px-3 py-2 ${
               selected
-                ? "bg-sunset text-accent-contrast"
+                ? "bg-accent-strong text-accent-contrast"
                 : "border-hairline bg-surface text-foreground border"
             }`}
           >

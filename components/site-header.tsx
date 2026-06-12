@@ -19,10 +19,11 @@ export async function SiteHeader() {
           <Logo />
         </Link>
 
-        <nav className="flex items-center gap-4">
+        {/* Full-height links give ~56px-tall tap targets (≥48px min, §7). */}
+        <nav className="-mr-2 flex h-full items-center gap-1">
           <Link
             href="/discover"
-            className="text-small text-foreground active:opacity-80"
+            className="text-small text-foreground flex h-full items-center px-2 active:opacity-80"
           >
             {t("nav_explore")}
           </Link>
@@ -30,19 +31,19 @@ export async function SiteHeader() {
             <>
               <Link
                 href="/tickets"
-                className="text-small text-foreground active:opacity-80"
+                className="text-small text-foreground flex h-full items-center px-2 active:opacity-80"
               >
                 {t("nav_tickets")}
               </Link>
               <Link
                 href="/operator"
-                className="text-small text-savanna active:opacity-80"
+                className="text-small text-savanna flex h-full items-center px-2 active:opacity-80"
               >
                 {isOperator ? t("nav_operator") : t("nav_list")}
               </Link>
               <Link
                 href="/account"
-                className="text-small text-foreground active:opacity-80"
+                className="text-small text-foreground flex h-full items-center px-2 active:opacity-80"
               >
                 {t("nav_account")}
               </Link>
@@ -50,7 +51,7 @@ export async function SiteHeader() {
           ) : (
             <Link
               href="/sign-in"
-              className="text-small text-sunset active:opacity-80"
+              className="text-small text-sunset flex h-full items-center px-2 active:opacity-80"
             >
               {t("nav_signin")}
             </Link>

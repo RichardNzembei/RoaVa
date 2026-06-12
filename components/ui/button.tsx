@@ -7,7 +7,7 @@ const base =
 
 const variants: Record<Variant, string> = {
   // One primary action per screen (Sunset).
-  primary: "bg-sunset text-accent-contrast active:opacity-90",
+  primary: "bg-accent-strong text-accent-contrast active:opacity-90",
   secondary:
     "border-hairline border bg-transparent text-savanna active:bg-accent-soft",
   ghost: "bg-transparent text-foreground active:bg-accent-soft",
