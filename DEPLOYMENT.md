@@ -41,10 +41,13 @@ Set these in Vercel (Project → Settings → Environment Variables). Local dev 
 
 1. Import the repo; framework auto-detects Next.js.
 2. Add all env vars from §1.
-3. `vercel.json` already schedules the **reconciliation cron** at `/api/cron/reconcile-payments`
-   every 5 minutes. **Vercel Cron at sub-daily frequency needs a Pro plan** — on Hobby it
-   runs once/day, which is too slow for payment recovery. Budget for Pro, or move the cron
-   to an external scheduler hitting the same route with the `CRON_SECRET` bearer.
+3. `vercel.json` schedules the **reconciliation cron** at `/api/cron/reconcile-payments`.
+   It's set to **daily** (`0 3 * * *`) because **Vercel Hobby only allows once-daily crons**.
+   The waiting screen self-reconciles within ~1–2 min while a user's tab is open, so the cron
+   is just the backstop for abandoned tabs. For tighter recovery, either: upgrade to **Pro**
+   and change the schedule to `*/5 * * * *`, or hit `/api/cron/reconcile-payments` from an
+   **external scheduler** (e.g. GitHub Actions, cron-job.org) every few minutes with the
+   `Authorization: Bearer <CRON_SECRET>` header.
 4. Note the stable HTTPS URL — you need it for the IntaSend webhook.
 
 ## 4. IntaSend (M-Pesa)
