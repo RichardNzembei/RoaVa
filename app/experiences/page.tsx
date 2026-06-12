@@ -2,6 +2,7 @@ import Link from "next/link";
 import { fetchExperiences, type ExperienceFilters } from "@/lib/experiences";
 import { ExperienceCard } from "@/components/experience-card";
 import { CATEGORIES, COUNTIES } from "@/lib/catalog";
+import { getT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 
 type SP = {
@@ -33,6 +34,7 @@ export default async function ExperiencesPage({
   };
 
   const cards = await fetchExperiences(filters);
+  const t = await getT();
   const hasFilters = Boolean(
     sp.q || sp.category || sp.county || sp.date || sp.price || sp.party || sp.when,
   );
@@ -40,9 +42,12 @@ export default async function ExperiencesPage({
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-5 py-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-h1 text-foreground">Browse experiences</h1>
+        <h1 className="text-h1 text-foreground">{t("browse_title")}</h1>
         <p className="text-small text-muted">
-          {cards.length} {cards.length === 1 ? "result" : "results"}
+          {(cards.length === 1 ? t("browse_result_one") : t("browse_result_many")).replace(
+            "{n}",
+            String(cards.length),
+          )}
         </p>
       </div>
 
@@ -56,18 +61,18 @@ export default async function ExperiencesPage({
           type="search"
           name="q"
           defaultValue={sp.q ?? ""}
-          placeholder="Search experiences, places…"
-          aria-label="Search"
+          placeholder={t("browse_search_ph")}
+          aria-label={t("browse_search_aria")}
           className="border-hairline bg-background text-body text-foreground placeholder:text-muted min-h-12 rounded-base border px-4"
         />
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Category">
+          <Field label={t("browse_cat")}>
             <select
               name="category"
               defaultValue={sp.category ?? ""}
               className="border-hairline bg-background text-body text-foreground min-h-12 rounded-base border px-3"
             >
-              <option value="">Any category</option>
+              <option value="">{t("browse_any_cat")}</option>
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -75,13 +80,13 @@ export default async function ExperiencesPage({
               ))}
             </select>
           </Field>
-          <Field label="County">
+          <Field label={t("browse_county")}>
             <select
               name="county"
               defaultValue={sp.county ?? ""}
               className="border-hairline bg-background text-body text-foreground min-h-12 rounded-base border px-3"
             >
-              <option value="">Any county</option>
+              <option value="">{t("browse_any_county")}</option>
               {COUNTIES.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -91,7 +96,7 @@ export default async function ExperiencesPage({
           </Field>
         </div>
         <div className="grid grid-cols-3 gap-4">
-          <Field label="Date">
+          <Field label={t("browse_date")}>
             <input
               type="date"
               name="date"
@@ -99,17 +104,17 @@ export default async function ExperiencesPage({
               className="border-hairline bg-background text-body text-foreground min-h-12 rounded-base border px-3"
             />
           </Field>
-          <Field label="Max price (KES)">
+          <Field label={t("browse_max_price")}>
             <input
               type="text"
               inputMode="numeric"
               name="price"
               defaultValue={sp.price ?? ""}
-              placeholder="Any"
+              placeholder={t("browse_price_any")}
               className="border-hairline bg-background text-body text-foreground placeholder:text-muted min-h-12 rounded-base border px-3"
             />
           </Field>
-          <Field label="Guests">
+          <Field label={t("browse_guests")}>
             <input
               type="text"
               inputMode="numeric"
@@ -121,10 +126,10 @@ export default async function ExperiencesPage({
           </Field>
         </div>
         <div className="flex items-center gap-3">
-          <Button type="submit">Search</Button>
+          <Button type="submit">{t("browse_search")}</Button>
           {hasFilters ? (
             <Link href="/experiences" className="text-small text-muted">
-              Clear filters
+              {t("browse_clear")}
             </Link>
           ) : null}
         </div>
@@ -132,12 +137,10 @@ export default async function ExperiencesPage({
 
       {cards.length === 0 ? (
         <div className="border-hairline rounded-card bg-surface flex flex-col items-start gap-2 border p-6">
-          <h2 className="text-h3 text-foreground">No experiences match</h2>
-          <p className="text-small text-muted">
-            Try widening your dates, price, or area.
-          </p>
+          <h2 className="text-h3 text-foreground">{t("browse_none_title")}</h2>
+          <p className="text-small text-muted">{t("browse_none_body")}</p>
           <Link href="/experiences" className="text-small text-sunset">
-            Clear filters
+            {t("browse_clear")}
           </Link>
         </div>
       ) : (

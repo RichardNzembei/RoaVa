@@ -3,6 +3,7 @@ import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { manualPayment } from "@/lib/env";
 import { formatKes, formatSlotDateTime } from "@/lib/format";
+import { getT } from "@/lib/i18n";
 import { BookingStatus } from "./booking-status";
 
 export default async function BookingStatusPage({
@@ -12,6 +13,7 @@ export default async function BookingStatusPage({
 }) {
   const { id } = await params;
   await requireProfile(`/bookings/${id}`);
+  const t = await getT();
 
   const supabase = await createClient();
   const { data: booking } = await supabase
@@ -40,6 +42,46 @@ export default async function BookingStatusPage({
         amountLabel={formatKes(booking.amount_kes)}
         retryHref={`/experiences/${booking.experience_id}/book?slot=${booking.slot_id}&party=${booking.party_size}`}
         manualPaybill={manualPayment.enabled ? manualPayment.paybill : null}
+        labels={{
+          confirmedTitle: t("wait_confirmed"),
+          confirmedBody: t("book_confirmed_body"),
+          confirmedSms: t("book_confirmed_sms"),
+          viewTicket: t("wait_view_ticket"),
+          pendingTitle: t("wait_title"),
+          pendingBody: t("book_pending_body"),
+          waiting: t("book_waiting"),
+          still: t("book_still"),
+          tryAgain: t("wait_try_again"),
+          tryIn: t("book_try_in"),
+          payManual: t("wait_pay_manual"),
+          manualDetail: t("book_manual_detail"),
+          browseOther: t("wait_browse_other"),
+          guestOne: t("guest_one"),
+          guestMany: t("guest_many"),
+          failure: {
+            insufficient: {
+              title: t("fail_insufficient_title"),
+              detail: t("fail_insufficient_detail"),
+            },
+            pin: { title: t("fail_pin_title"), detail: t("fail_pin_detail") },
+            cancel: {
+              title: t("fail_cancel_title"),
+              detail: t("fail_cancel_detail"),
+            },
+            timeout: {
+              title: t("fail_timeout_title"),
+              detail: t("fail_timeout_detail"),
+            },
+            network: {
+              title: t("fail_network_title"),
+              detail: t("fail_network_detail"),
+            },
+            generic: {
+              title: t("fail_generic_title"),
+              detail: t("fail_generic_detail"),
+            },
+          },
+        }}
       />
     </main>
   );

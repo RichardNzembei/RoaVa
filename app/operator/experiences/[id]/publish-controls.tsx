@@ -10,11 +10,23 @@ import {
   type FormState,
 } from "../actions";
 
-function PublishButton() {
+export type PublishLabels = {
+  publishing: string;
+  publish: string;
+  liveMsg: string;
+  unpublish: string;
+  draftMsg: string;
+  deleteConfirm: string;
+  keep: string;
+  del: string;
+  deleteExp: string;
+};
+
+function PublishButton({ idle, busy }: { idle: string; busy: string }) {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} aria-busy={pending}>
-      {pending ? "Publishing…" : "Publish"}
+      {pending ? busy : idle}
     </Button>
   );
 }
@@ -22,9 +34,11 @@ function PublishButton() {
 export function PublishControls({
   experienceId,
   status,
+  labels,
 }: {
   experienceId: string;
   status: string;
+  labels: PublishLabels;
 }) {
   const publishAction = publishExperience.bind(null, experienceId);
   const [state, formAction] = useActionState<FormState, FormData>(
@@ -39,11 +53,11 @@ export function PublishControls({
       {published ? (
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-small text-foreground flex-1">
-            This experience is live and bookable.
+            {labels.liveMsg}
           </span>
           <form action={unpublishExperience.bind(null, experienceId)}>
             <Button type="submit" variant="secondary">
-              Unpublish
+              {labels.unpublish}
             </Button>
           </form>
         </div>
@@ -51,10 +65,10 @@ export function PublishControls({
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-small text-foreground flex-1">
-              Draft — only you can see this.
+              {labels.draftMsg}
             </span>
             <form action={formAction}>
-              <PublishButton />
+              <PublishButton idle={labels.publish} busy={labels.publishing} />
             </form>
           </div>
           {state.status === "error" ? (
@@ -69,18 +83,18 @@ export function PublishControls({
         {confirmDelete ? (
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-small text-foreground flex-1">
-              Delete this experience for good?
+              {labels.deleteConfirm}
             </span>
             <button
               type="button"
               onClick={() => setConfirmDelete(false)}
               className="text-small text-muted"
             >
-              Keep
+              {labels.keep}
             </button>
             <form action={deleteExperience.bind(null, experienceId)}>
               <Button type="submit" variant="danger">
-                Delete
+                {labels.del}
               </Button>
             </form>
           </div>
@@ -90,7 +104,7 @@ export function PublishControls({
             onClick={() => setConfirmDelete(true)}
             className="text-small text-muted active:text-danger"
           >
-            Delete experience
+            {labels.deleteExp}
           </button>
         )}
       </div>

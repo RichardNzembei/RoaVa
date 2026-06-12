@@ -4,6 +4,7 @@ import { requireOperator } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { formatSlotDateTime } from "@/lib/format";
+import { getT } from "@/lib/i18n";
 
 // Guest roster for the operator's day. Consumer names are RLS-private, so we
 // fetch via the service client AFTER confirming this operator owns the
@@ -15,6 +16,7 @@ export default async function GuestsPage({
 }) {
   const { id } = await params;
   const operator = await requireOperator();
+  const t = await getT();
 
   const supabase = await createClient();
   const { data: exp } = await supabase
@@ -66,17 +68,18 @@ export default async function GuestsPage({
         >
           ← {exp.title}
         </Link>
-        <h1 className="text-h1 text-foreground">Guests</h1>
+        <h1 className="text-h1 text-foreground">{t("op_guests_title")}</h1>
         <p className="text-small text-muted">
-          {totalGuests} {totalGuests === 1 ? "guest" : "guests"} booked across{" "}
-          {slots.length} {slots.length === 1 ? "date" : "dates"}.
+          {t("op_guests_summary")
+            .replace("{g}", String(totalGuests))
+            .replace("{gUnit}", totalGuests === 1 ? t("guest_one") : t("guest_many"))
+            .replace("{d}", String(slots.length))
+            .replace("{dUnit}", slots.length === 1 ? t("date_one") : t("date_many"))}
         </p>
       </div>
 
       {slots.length === 0 ? (
-        <p className="text-small text-muted">
-          No confirmed bookings yet. Guests appear here once they&apos;ve paid.
-        </p>
+        <p className="text-small text-muted">{t("op_guests_none")}</p>
       ) : (
         <div className="flex flex-col gap-6">
           {slots.map((slot) => (
@@ -100,11 +103,11 @@ export default async function GuestsPage({
                     >
                       <div className="flex flex-col gap-0.5">
                         <span className="text-body text-foreground">
-                          {profile?.name ?? "Guest"}
+                          {profile?.name ?? t("op_guest_fallback")}
                         </span>
                         <span className="text-caption text-muted">
                           {b.party_size}{" "}
-                          {b.party_size === 1 ? "guest" : "guests"}
+                          {b.party_size === 1 ? t("guest_one") : t("guest_many")}
                         </span>
                       </div>
                       <span
@@ -114,7 +117,7 @@ export default async function GuestsPage({
                             : "bg-warning/15 text-warning"
                         }`}
                       >
-                        {checkedIn ? "Checked in" : "Expected"}
+                        {checkedIn ? t("op_checked_in") : t("op_expected")}
                       </span>
                     </li>
                   );

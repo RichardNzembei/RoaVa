@@ -14,38 +14,45 @@ type StatusResponse = {
 const STK_WINDOW_S = 60; // the M-Pesa prompt window
 const RETRY_COOLDOWN_S = 15;
 
-// Plain-language copy per failure mode (§6.5). Mapped from the provider reason.
-function failureCopy(reason: string | null): { title: string; detail: string } {
-  const r = (reason ?? "").toLowerCase();
-  if (r.includes("insufficient") || r.includes("balance"))
-    return {
-      title: "Not enough M-Pesa balance",
-      detail: "Top up or use Fuliza, then try again.",
-    };
-  if (r.includes("pin"))
-    return {
-      title: "Wrong M-Pesa PIN",
-      detail: "Try again and enter your PIN carefully.",
-    };
-  if (r.includes("cancel"))
-    return {
-      title: "Payment cancelled",
-      detail: "You dismissed the prompt. Try again when you're ready.",
-    };
-  if (r.includes("timeout") || r.includes("timed out"))
-    return {
-      title: "The prompt timed out",
-      detail: "We didn't get a response in time. Resend and check your phone.",
-    };
-  if (r.includes("network") || r.includes("ussd"))
-    return {
-      title: "Network hiccup",
-      detail: "M-Pesa was briefly unreachable. Please try again.",
-    };
-  return {
-    title: "Payment didn't go through",
-    detail: "Something went wrong. You can try again.",
+type FailureCopy = { title: string; detail: string };
+export type BookingStatusLabels = {
+  confirmedTitle: string;
+  confirmedBody: string; // "{title} … {date}"
+  confirmedSms: string;
+  viewTicket: string;
+  pendingTitle: string;
+  pendingBody: string; // "{amount} … {title}"
+  waiting: string; // "… {n}s"
+  still: string;
+  tryAgain: string;
+  tryIn: string; // "… {n}s"
+  payManual: string;
+  manualDetail: string; // "{paybill} … {ref} … {amount}"
+  browseOther: string;
+  guestOne: string;
+  guestMany: string;
+  failure: {
+    insufficient: FailureCopy;
+    pin: FailureCopy;
+    cancel: FailureCopy;
+    timeout: FailureCopy;
+    network: FailureCopy;
+    generic: FailureCopy;
   };
+};
+
+// Map the provider reason → a localised failure copy (§6.5).
+function failureCopy(
+  reason: string | null,
+  f: BookingStatusLabels["failure"],
+): FailureCopy {
+  const r = (reason ?? "").toLowerCase();
+  if (r.includes("insufficient") || r.includes("balance")) return f.insufficient;
+  if (r.includes("pin")) return f.pin;
+  if (r.includes("cancel")) return f.cancel;
+  if (r.includes("timeout") || r.includes("timed out")) return f.timeout;
+  if (r.includes("network") || r.includes("ussd")) return f.network;
+  return f.generic;
 }
 
 export function BookingStatus({
@@ -57,6 +64,7 @@ export function BookingStatus({
   amountLabel,
   retryHref,
   manualPaybill,
+  labels,
 }: {
   bookingId: string;
   initialStatus: string;
@@ -66,6 +74,7 @@ export function BookingStatus({
   amountLabel: string;
   retryHref: string;
   manualPaybill: string | null;
+  labels: BookingStatusLabels;
 }) {
   const [data, setData] = useState<StatusResponse>({
     status: initialStatus,
@@ -123,26 +132,31 @@ export function BookingStatus({
         <div className="bg-success/15 text-success flex h-16 w-16 items-center justify-center rounded-full text-h1">
           ✓
         </div>
-        <h1 className="text-h1 text-foreground">Booking confirmed</h1>
+        <h1 className="text-h1 text-foreground">{labels.confirmedTitle}</h1>
         <p className="text-body text-muted">
-          You&apos;re all set for {title} on {dateLabel}.
+          {labels.confirmedBody
+            .replace("{title}", title)
+            .replace("{date}", dateLabel)}
         </p>
-        <Summary party={party} amountLabel={amountLabel} />
-        <p className="text-caption text-muted">
-          We&apos;ve sent your booking reference to your phone.
-        </p>
+        <Summary
+          party={party}
+          amountLabel={amountLabel}
+          guestOne={labels.guestOne}
+          guestMany={labels.guestMany}
+        />
+        <p className="text-caption text-muted">{labels.confirmedSms}</p>
         <Link
           href={`/tickets/${bookingId}`}
           className={buttonClasses("primary", true)}
         >
-          View your ticket
+          {labels.viewTicket}
         </Link>
       </div>
     );
   }
 
   if (data.status === "cancelled") {
-    const copy = failureCopy(data.failureReason);
+    const copy = failureCopy(data.failureReason, labels.failure);
     return (
       <div className="flex flex-col gap-4">
         <div className="flex flex-col items-center gap-3 text-center">
@@ -158,27 +172,28 @@ export function BookingStatus({
             disabled
             className={`${buttonClasses("primary", true)} pointer-events-none`}
           >
-            Try again in {cooldown}s
+            {labels.tryIn.replace("{n}", String(cooldown))}
           </button>
         ) : (
           <Link href={retryHref} className={buttonClasses("primary", true)}>
-            Try again
+            {labels.tryAgain}
           </Link>
         )}
 
         {manualPaybill ? (
           <div className="border-hairline rounded-card bg-surface flex flex-col gap-1 border p-4">
-            <span className="text-small text-foreground">Pay manually instead</span>
+            <span className="text-small text-foreground">{labels.payManual}</span>
             <p className="text-caption text-muted">
-              M-Pesa Paybill {manualPaybill}, account{" "}
-              <span className="text-foreground">{bookingId.slice(0, 8)}</span>,
-              amount {amountLabel}. We&apos;ll confirm once received.
+              {labels.manualDetail
+                .replace("{paybill}", manualPaybill)
+                .replace("{ref}", bookingId.slice(0, 8))
+                .replace("{amount}", amountLabel)}
             </p>
           </div>
         ) : null}
 
         <Link href="/experiences" className="text-small text-muted text-center">
-          Browse other experiences
+          {labels.browseOther}
         </Link>
       </div>
     );
@@ -189,27 +204,43 @@ export function BookingStatus({
     <div className="flex flex-col items-center gap-5 text-center">
       <div className="border-sunset h-16 w-16 animate-spin rounded-full border-4 border-t-transparent motion-reduce:animate-none" />
       <div className="flex flex-col gap-2">
-        <h1 className="text-h1 text-foreground">Check your phone</h1>
+        <h1 className="text-h1 text-foreground">{labels.pendingTitle}</h1>
         <p className="text-body text-muted">
-          We&apos;ve sent an M-Pesa prompt — enter your PIN to confirm{" "}
-          {amountLabel} for {title}.
+          {labels.pendingBody
+            .replace("{amount}", amountLabel)
+            .replace("{title}", title)}
         </p>
       </div>
       <p className="text-small text-muted" aria-live="polite">
         {secondsLeft > 0
-          ? `Waiting for confirmation… ${secondsLeft}s`
-          : "Still confirming — hang tight, this can take a moment."}
+          ? labels.waiting.replace("{n}", String(secondsLeft))
+          : labels.still}
       </p>
-      <Summary party={party} amountLabel={amountLabel} />
+      <Summary
+        party={party}
+        amountLabel={amountLabel}
+        guestOne={labels.guestOne}
+        guestMany={labels.guestMany}
+      />
     </div>
   );
 }
 
-function Summary({ party, amountLabel }: { party: number; amountLabel: string }) {
+function Summary({
+  party,
+  amountLabel,
+  guestOne,
+  guestMany,
+}: {
+  party: number;
+  amountLabel: string;
+  guestOne: string;
+  guestMany: string;
+}) {
   return (
     <div className="border-hairline rounded-card bg-surface flex w-full items-center justify-between border p-3">
       <span className="text-small text-muted">
-        {party} {party === 1 ? "guest" : "guests"}
+        {party} {party === 1 ? guestOne : guestMany}
       </span>
       <span className="text-h3 text-foreground">{amountLabel}</span>
     </div>

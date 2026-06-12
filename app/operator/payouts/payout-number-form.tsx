@@ -7,16 +7,43 @@ import { TextField } from "@/components/ui/text-field";
 import { formatKenyanPhone } from "@/lib/phone";
 import { savePayoutNumber, type PayoutNumberState } from "./actions";
 
-function SaveButton({ hasNumber }: { hasNumber: boolean }) {
+export type PayoutNumberLabels = {
+  title: string;
+  set: string; // "Payouts go to {phone}."
+  unset: string;
+  label: string;
+  saving: string;
+  update: string;
+  save: string;
+  saved: string;
+};
+
+function SaveButton({
+  hasNumber,
+  saving,
+  update,
+  save,
+}: {
+  hasNumber: boolean;
+  saving: string;
+  update: string;
+  save: string;
+}) {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" variant="secondary" disabled={pending} aria-busy={pending}>
-      {pending ? "Saving…" : hasNumber ? "Update" : "Save"}
+      {pending ? saving : hasNumber ? update : save}
     </Button>
   );
 }
 
-export function PayoutNumberForm({ current }: { current: string | null }) {
+export function PayoutNumberForm({
+  current,
+  labels,
+}: {
+  current: string | null;
+  labels: PayoutNumberLabels;
+}) {
   const [state, action] = useActionState<PayoutNumberState, FormData>(
     savePayoutNumber,
     { status: "idle" },
@@ -29,17 +56,17 @@ export function PayoutNumberForm({ current }: { current: string | null }) {
       }`}
     >
       <div className="flex flex-col gap-0.5">
-        <h2 className="text-h3 text-foreground">Payout number</h2>
+        <h2 className="text-h3 text-foreground">{labels.title}</h2>
         <p className="text-small text-muted">
           {current
-            ? `Payouts go to ${formatKenyanPhone(current)}.`
-            : "Add the M-Pesa number to receive your payouts — required to get paid."}
+            ? labels.set.replace("{phone}", formatKenyanPhone(current))
+            : labels.unset}
         </p>
       </div>
       <form action={action} className="flex items-end gap-3">
         <div className="flex-1">
           <TextField
-            label="M-Pesa number"
+            label={labels.label}
             name="payout_msisdn"
             type="tel"
             inputMode="tel"
@@ -48,11 +75,16 @@ export function PayoutNumberForm({ current }: { current: string | null }) {
             error={state.status === "error" ? state.message : undefined}
           />
         </div>
-        <SaveButton hasNumber={Boolean(current)} />
+        <SaveButton
+          hasNumber={Boolean(current)}
+          saving={labels.saving}
+          update={labels.update}
+          save={labels.save}
+        />
       </form>
       {state.status === "saved" ? (
         <p className="text-caption text-success" aria-live="polite">
-          Payout number saved.
+          {labels.saved}
         </p>
       ) : null}
     </div>

@@ -15,11 +15,24 @@ import { submitReview, type ReviewState } from "./actions";
 
 const MAX_PHOTOS = 4;
 
-function SubmitButton() {
+export type ReviewLabels = {
+  yourRating: string;
+  ratingAria: string;
+  starOne: string; // "{n} star"
+  starMany: string; // "{n} stars"
+  yourReview: string;
+  placeholder: string;
+  photos: string;
+  uploading: string;
+  posting: string;
+  post: string;
+};
+
+function SubmitButton({ idle, busy }: { idle: string; busy: string }) {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" fullWidth disabled={pending} aria-busy={pending}>
-      {pending ? "Posting…" : "Post review"}
+      {pending ? busy : idle}
     </Button>
   );
 }
@@ -28,10 +41,12 @@ export function ReviewForm({
   bookingId,
   experienceId,
   profileId,
+  labels,
 }: {
   bookingId: string;
   experienceId: string;
   profileId: string;
+  labels: ReviewLabels;
 }) {
   const action = submitReview.bind(null, bookingId, experienceId);
   const [state, formAction] = useActionState<ReviewState, FormData>(action, {
@@ -73,15 +88,18 @@ export function ReviewForm({
       <input type="hidden" name="photos" value={JSON.stringify(photos)} />
 
       <div className="flex flex-col gap-2">
-        <span className="text-small text-foreground">Your rating</span>
-        <div className="flex gap-2" role="radiogroup" aria-label="Rating">
+        <span className="text-small text-foreground">{labels.yourRating}</span>
+        <div className="flex gap-2" role="radiogroup" aria-label={labels.ratingAria}>
           {[1, 2, 3, 4, 5].map((n) => (
             <button
               key={n}
               type="button"
               role="radio"
               aria-checked={rating === n}
-              aria-label={`${n} star${n === 1 ? "" : "s"}`}
+              aria-label={(n === 1 ? labels.starOne : labels.starMany).replace(
+                "{n}",
+                String(n),
+              )}
               onClick={() => setRating(n)}
               className={`text-h1 leading-none ${n <= rating ? "text-warning" : "text-muted"}`}
             >
@@ -92,14 +110,14 @@ export function ReviewForm({
       </div>
 
       <Textarea
-        label="Your review"
+        label={labels.yourReview}
         name="body"
-        placeholder="How was it? What should other guests know?"
+        placeholder={labels.placeholder}
         rows={5}
       />
 
       <div className="flex flex-col gap-2">
-        <span className="text-small text-foreground">Photos (optional)</span>
+        <span className="text-small text-foreground">{labels.photos}</span>
         {photos.length > 0 ? (
           <ul className="grid grid-cols-4 gap-2">
             {photos.map((key) => (
@@ -130,7 +148,7 @@ export function ReviewForm({
         ) : null}
         {busy ? (
           <span className="text-caption text-muted" aria-live="polite">
-            Uploading…
+            {labels.uploading}
           </span>
         ) : null}
       </div>
@@ -141,7 +159,7 @@ export function ReviewForm({
         </p>
       ) : null}
 
-      <SubmitButton />
+      <SubmitButton idle={labels.post} busy={labels.posting} />
     </form>
   );
 }

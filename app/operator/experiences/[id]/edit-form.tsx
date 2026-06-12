@@ -12,16 +12,46 @@ import type { Database } from "@/lib/database.types";
 
 type Experience = Database["public"]["Tables"]["experiences"]["Row"];
 
-function SubmitButton() {
+export type EditExperienceLabels = {
+  title: string;
+  desc: string;
+  descPh: string;
+  category: string;
+  county: string;
+  choose: string;
+  area: string;
+  areaPh: string;
+  meeting: string;
+  meetingPh: string;
+  meetingHint: string;
+  price: string;
+  duration: string;
+  durationPh: string;
+  maxParty: string;
+  cancel: string;
+  cancelPh: string;
+  cancelHint: string;
+  saving: string;
+  save: string;
+  savedInstant: string;
+};
+
+function SubmitButton({ idle, busy }: { idle: string; busy: string }) {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} aria-busy={pending}>
-      {pending ? "Saving…" : "Save changes"}
+      {pending ? busy : idle}
     </Button>
   );
 }
 
-export function EditExperienceForm({ experience }: { experience: Experience }) {
+export function EditExperienceForm({
+  experience,
+  labels,
+}: {
+  experience: Experience;
+  labels: EditExperienceLabels;
+}) {
   const action = updateExperience.bind(null, experience.id);
   const [state, formAction] = useActionState<FormState, FormData>(action, {
     status: "idle",
@@ -30,55 +60,55 @@ export function EditExperienceForm({ experience }: { experience: Experience }) {
   return (
     <form action={formAction} className="flex flex-col gap-5">
       <TextField
-        label="Title"
+        label={labels.title}
         name="title"
         defaultValue={experience.title}
         error={state.status === "error" ? state.message : undefined}
       />
       <Textarea
-        label="Description"
+        label={labels.desc}
         name="description"
         defaultValue={experience.description ?? ""}
-        placeholder="What makes this worth doing? What's included?"
+        placeholder={labels.descPh}
       />
       <div className="grid grid-cols-2 gap-4">
         <Select
-          label="Category"
+          label={labels.category}
           name="category"
           options={CATEGORIES}
           defaultValue={experience.category ?? ""}
-          placeholder="Choose"
+          placeholder={labels.choose}
         />
         <Select
-          label="County"
+          label={labels.county}
           name="county"
           options={COUNTIES}
           defaultValue={experience.county ?? ""}
-          placeholder="Choose"
+          placeholder={labels.choose}
         />
       </div>
       <TextField
-        label="Area / neighbourhood"
+        label={labels.area}
         name="area"
         defaultValue={experience.area ?? ""}
-        placeholder="e.g. Karen"
+        placeholder={labels.areaPh}
       />
       <Textarea
-        label="Meeting point"
+        label={labels.meeting}
         name="meeting_point"
         defaultValue={experience.meeting_point ?? ""}
-        placeholder="Where exactly should guests meet you?"
-        hint="Required before publishing."
+        placeholder={labels.meetingPh}
+        hint={labels.meetingHint}
       />
       <div className="grid grid-cols-2 gap-4">
         <TextField
-          label="Price per person (KES)"
+          label={labels.price}
           name="base_price_kes"
           inputMode="numeric"
           defaultValue={String(experience.base_price_kes)}
         />
         <TextField
-          label="Duration (minutes)"
+          label={labels.duration}
           name="duration_minutes"
           inputMode="numeric"
           defaultValue={
@@ -86,28 +116,28 @@ export function EditExperienceForm({ experience }: { experience: Experience }) {
               ? String(experience.duration_minutes)
               : ""
           }
-          placeholder="e.g. 180"
+          placeholder={labels.durationPh}
         />
       </div>
       <TextField
-        label="Max party size per booking"
+        label={labels.maxParty}
         name="max_party_size"
         inputMode="numeric"
         defaultValue={String(experience.max_party_size)}
       />
       <Textarea
-        label="Cancellation policy"
+        label={labels.cancel}
         name="cancellation_policy"
         defaultValue={experience.cancellation_policy ?? ""}
-        placeholder="e.g. Free cancellation up to 24 hours before."
-        hint="Shown to guests before they pay."
+        placeholder={labels.cancelPh}
+        hint={labels.cancelHint}
       />
 
       <div className="flex items-center gap-3">
-        <SubmitButton />
+        <SubmitButton idle={labels.save} busy={labels.saving} />
         {state.status === "idle" ? (
           <span className="text-caption text-muted" aria-live="polite">
-            Saved changes appear instantly.
+            {labels.savedInstant}
           </span>
         ) : null}
       </div>

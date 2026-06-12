@@ -35,14 +35,26 @@ async function compress(file: File): Promise<Blob> {
   return blob ?? file;
 }
 
+export type ImageManagerLabels = {
+  cover: string;
+  remove: string;
+  noneTitle: string;
+  noneHint: string;
+  uploading: string;
+  uploadFailed: string;
+  saveFailed: string;
+};
+
 export function ImageManager({
   experienceId,
   operatorId,
   images,
+  labels,
 }: {
   experienceId: string;
   operatorId: string;
   images: string[];
+  labels: ImageManagerLabels;
 }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -68,12 +80,12 @@ export function ImageManager({
           .from(EXPERIENCE_IMAGES_BUCKET)
           .upload(key, blob, { contentType: "image/webp", upsert: false });
         if (upErr) {
-          setError("Upload failed. Check your connection and try again.");
+          setError(labels.uploadFailed);
           break;
         }
         const res = await attachImage(experienceId, key);
         if (!res.ok) {
-          setError(res.message ?? "Couldn't save the photo.");
+          setError(res.message ?? labels.saveFailed);
           break;
         }
       }
@@ -110,14 +122,14 @@ export function ImageManager({
               </div>
               {i === 0 ? (
                 <span className="bg-ink/70 text-caption absolute left-1.5 top-1.5 rounded-base px-1.5 py-0.5 text-white">
-                  Cover
+                  {labels.cover}
                 </span>
               ) : null}
               <button
                 type="button"
                 onClick={() => onRemove(key)}
                 disabled={busy}
-                aria-label="Remove photo"
+                aria-label={labels.remove}
                 className="bg-ink/70 absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full text-white disabled:opacity-50"
               >
                 ✕
@@ -127,8 +139,8 @@ export function ImageManager({
         </ul>
       ) : (
         <div className="border-hairline text-muted rounded-card flex aspect-[4/3] max-w-xs flex-col items-center justify-center gap-1 border border-dashed">
-          <span className="text-small">No photos yet</span>
-          <span className="text-caption">Add a sunlit, people-present shot</span>
+          <span className="text-small">{labels.noneTitle}</span>
+          <span className="text-caption">{labels.noneHint}</span>
         </div>
       )}
 
@@ -144,7 +156,7 @@ export function ImageManager({
         />
         {busy ? (
           <span className="text-caption text-muted" aria-live="polite">
-            Uploading…
+            {labels.uploading}
           </span>
         ) : error ? (
           <span className="text-caption text-danger" aria-live="polite">

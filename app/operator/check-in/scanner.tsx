@@ -10,28 +10,57 @@ type ResultUI = {
   detail?: string;
 };
 
-function present(r: CheckInResult): ResultUI {
+export type ScannerLabels = {
+  ok: string;
+  usedTitle: string;
+  usedDetail: string;
+  notOwnerTitle: string;
+  notOwnerDetail: string;
+  notConfirmedTitle: string;
+  notConfirmedDetail: string;
+  invalidTitle: string;
+  invalidDetail: string;
+  guestOne: string;
+  guestMany: string;
+  cameraTitle: string;
+  cameraDetail: string;
+  stop: string;
+  start: string;
+  unsupported: string;
+  orEnter: string;
+  codePh: string;
+  checking: string;
+  checkin: string;
+};
+
+function present(r: CheckInResult, labels: ScannerLabels): ResultUI {
   switch (r.status) {
     case "ok":
       return {
         tone: "success",
-        title: "Checked in ✓",
-        detail: [r.guest, r.party ? `${r.party} guest${r.party === 1 ? "" : "s"}` : null, r.experience]
+        title: labels.ok,
+        detail: [
+          r.guest,
+          r.party
+            ? `${r.party} ${r.party === 1 ? labels.guestOne : labels.guestMany}`
+            : null,
+          r.experience,
+        ]
           .filter(Boolean)
           .join(" · "),
       };
     case "used":
       return {
         tone: "warning",
-        title: "Already used",
-        detail: `This ticket was already checked in${r.guest ? ` (${r.guest})` : ""}.`,
+        title: labels.usedTitle,
+        detail: `${labels.usedDetail}${r.guest ? ` (${r.guest})` : ""}.`,
       };
     case "not_owner":
-      return { tone: "danger", title: "Not your experience", detail: "This ticket belongs to another operator." };
+      return { tone: "danger", title: labels.notOwnerTitle, detail: labels.notOwnerDetail };
     case "not_confirmed":
-      return { tone: "danger", title: "Not confirmed", detail: "This booking isn't paid/confirmed." };
+      return { tone: "danger", title: labels.notConfirmedTitle, detail: labels.notConfirmedDetail };
     default:
-      return { tone: "danger", title: "Invalid ticket", detail: "We couldn't verify this code." };
+      return { tone: "danger", title: labels.invalidTitle, detail: labels.invalidDetail };
   }
 }
 
@@ -41,7 +70,7 @@ const toneClasses: Record<ResultUI["tone"], string> = {
   danger: "bg-danger/15 text-danger",
 };
 
-export function CheckInScanner() {
+export function CheckInScanner({ labels }: { labels: ScannerLabels }) {
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ResultUI | null>(null);
@@ -60,7 +89,7 @@ export function CheckInScanner() {
     setBusy(true);
     try {
       const res = await checkInTicket(v);
-      setResult(present(res));
+      setResult(present(res, labels));
       setToken("");
     } finally {
       setBusy(false);
@@ -107,8 +136,8 @@ export function CheckInScanner() {
       setScanning(false);
       setResult({
         tone: "danger",
-        title: "Camera unavailable",
-        detail: "Allow camera access, or paste the code below.",
+        title: labels.cameraTitle,
+        detail: labels.cameraDetail,
       });
     }
   }
@@ -133,35 +162,32 @@ export function CheckInScanner() {
             className="aspect-square w-full rounded-card bg-ink object-cover"
           />
           <Button variant="secondary" onClick={stopCamera}>
-            Stop scanning
+            {labels.stop}
           </Button>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
           {canScan ? (
             <Button onClick={startCamera} fullWidth disabled={busy}>
-              Scan a ticket
+              {labels.start}
             </Button>
           ) : (
-            <p className="text-caption text-muted">
-              Camera scanning isn&apos;t supported on this device — paste the
-              ticket code below.
-            </p>
+            <p className="text-caption text-muted">{labels.unsupported}</p>
           )}
 
           <div className="border-hairline rounded-card bg-surface flex flex-col gap-3 border p-4">
             <label htmlFor="token" className="text-small text-foreground">
-              Or enter the ticket code
+              {labels.orEnter}
             </label>
             <input
               id="token"
               value={token}
               onChange={(e) => setToken(e.target.value)}
-              placeholder="Paste the scanned code"
+              placeholder={labels.codePh}
               className="border-hairline bg-background text-body text-foreground placeholder:text-muted min-h-12 rounded-base border px-4"
             />
             <Button onClick={() => submit(token)} disabled={busy || !token.trim()}>
-              {busy ? "Checking…" : "Check in"}
+              {busy ? labels.checking : labels.checkin}
             </Button>
           </div>
         </div>

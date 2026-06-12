@@ -4,24 +4,31 @@ import { requireProfile, getOperator } from "@/lib/auth";
 import { buttonClasses } from "@/components/ui/button";
 import { formatKes } from "@/lib/format";
 import { experienceImageUrl } from "@/lib/storage";
+import { getT } from "@/lib/i18n";
 import { BecomeOperatorForm } from "./become-operator-form";
 
 export default async function OperatorPage() {
   // Must be signed in and named; sends to sign-in/onboarding otherwise.
-  const profile = await requireProfile("/operator");
+  await requireProfile("/operator");
   const operator = await getOperator();
+  const t = await getT();
 
   if (!operator) {
     return (
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-8 px-6 py-12">
         <div className="flex flex-col gap-2">
-          <h1 className="text-h1 text-foreground">List with RoaVa</h1>
-          <p className="text-body text-muted">
-            Take bookings and get paid to M-Pesa. Reach guests looking for
-            exactly what you offer — no pen-and-paper chaos.
-          </p>
+          <h1 className="text-h1 text-foreground">{t("op_list_title")}</h1>
+          <p className="text-body text-muted">{t("op_list_body")}</p>
         </div>
-        <BecomeOperatorForm />
+        <BecomeOperatorForm
+          labels={{
+            bizName: t("op_biz_name"),
+            bizPh: t("op_biz_ph"),
+            bizHint: t("op_biz_hint"),
+            setup: t("op_setup"),
+            start: t("op_start_listing"),
+          }}
+        />
       </main>
     );
   }
@@ -42,45 +49,44 @@ export default async function OperatorPage() {
           <div className="flex items-center gap-2">
             <h1 className="text-h1 text-foreground">{operator.business_name}</h1>
             {operator.verified ? (
-              <span className="text-savanna text-caption">✓ verified</span>
+              <span className="text-savanna text-caption">
+                ✓ {t("op_verified")}
+              </span>
             ) : null}
           </div>
-          <p className="text-small text-muted">Your experiences</p>
+          <p className="text-small text-muted">{t("op_your_experiences")}</p>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href="/operator/payouts"
             className={buttonClasses("ghost")}
           >
-            Earnings
+            {t("op_earnings")}
           </Link>
           <Link
             href="/operator/check-in"
             className={buttonClasses("secondary")}
           >
-            Check in
+            {t("op_checkin")}
           </Link>
           <Link
             href="/operator/experiences/new"
             className={buttonClasses("primary")}
           >
-            New
+            {t("op_new")}
           </Link>
         </div>
       </div>
 
       {list.length === 0 ? (
         <div className="border-hairline rounded-card bg-surface flex flex-col items-start gap-3 border p-6">
-          <h2 className="text-h3 text-foreground">No experiences yet</h2>
-          <p className="text-small text-muted">
-            Create your first listing — it starts as a draft, so nothing goes
-            live until you publish it.
-          </p>
+          <h2 className="text-h3 text-foreground">{t("op_none_title")}</h2>
+          <p className="text-small text-muted">{t("op_none_body")}</p>
           <Link
             href="/operator/experiences/new"
             className={buttonClasses("primary")}
           >
-            Create your first experience
+            {t("op_create_first")}
           </Link>
         </div>
       ) : (
@@ -101,7 +107,11 @@ export default async function OperatorPage() {
                     {formatKes(exp.base_price_kes)}
                   </span>
                 </div>
-                <StatusPill status={exp.status} />
+                <StatusPill
+                  status={exp.status}
+                  publishedLabel={t("op_published")}
+                  draftLabel={t("op_draft")}
+                />
               </Link>
             </li>
           ))}
@@ -136,7 +146,15 @@ function ExperienceThumb({
   );
 }
 
-function StatusPill({ status }: { status: string }) {
+function StatusPill({
+  status,
+  publishedLabel,
+  draftLabel,
+}: {
+  status: string;
+  publishedLabel: string;
+  draftLabel: string;
+}) {
   const published = status === "published";
   return (
     <span
@@ -146,7 +164,7 @@ function StatusPill({ status }: { status: string }) {
           : "bg-warning/15 text-warning"
       }`}
     >
-      {published ? "Published" : "Draft"}
+      {published ? publishedLabel : draftLabel}
     </span>
   );
 }

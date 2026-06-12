@@ -6,16 +6,24 @@ import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/text-field";
 import { becomeOperator, type BecomeOperatorState } from "./actions";
 
-function SubmitButton() {
+export type BecomeOperatorLabels = {
+  bizName: string;
+  bizPh: string;
+  bizHint: string;
+  setup: string;
+  start: string;
+};
+
+function SubmitButton({ idle, busy }: { idle: string; busy: string }) {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" fullWidth disabled={pending} aria-busy={pending}>
-      {pending ? "Setting up…" : "Start listing"}
+      {pending ? busy : idle}
     </Button>
   );
 }
 
-export function BecomeOperatorForm() {
+export function BecomeOperatorForm({ labels }: { labels: BecomeOperatorLabels }) {
   const [state, action] = useActionState<BecomeOperatorState, FormData>(
     becomeOperator,
     { status: "idle" },
@@ -24,15 +32,15 @@ export function BecomeOperatorForm() {
   return (
     <form action={action} className="flex flex-col gap-5">
       <TextField
-        label="Business name"
+        label={labels.bizName}
         name="business_name"
         type="text"
         autoFocus
-        placeholder="e.g. Rift Valley Treks"
-        hint="This is what guests will see on your listings."
+        placeholder={labels.bizPh}
+        hint={labels.bizHint}
         error={state.status === "error" ? state.message : undefined}
       />
-      <SubmitButton />
+      <SubmitButton idle={labels.start} busy={labels.setup} />
     </form>
   );
 }

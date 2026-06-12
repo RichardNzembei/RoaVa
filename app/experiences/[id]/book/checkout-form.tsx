@@ -6,11 +6,19 @@ import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/text-field";
 import { payWithMpesa, type CheckoutState } from "./actions";
 
-function PayButton() {
+export type CheckoutLabels = {
+  mpesaLabel: string;
+  mpesaHint: string;
+  pay: string;
+  paying: string;
+  payNote: string;
+};
+
+function PayButton({ idle, busy }: { idle: string; busy: string }) {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" fullWidth disabled={pending} aria-busy={pending}>
-      {pending ? "Sending prompt…" : "Pay with M-Pesa"}
+      {pending ? busy : idle}
     </Button>
   );
 }
@@ -20,11 +28,13 @@ export function CheckoutForm({
   slotId,
   party,
   defaultPhone,
+  labels,
 }: {
   experienceId: string;
   slotId: string;
   party: number;
   defaultPhone: string;
+  labels: CheckoutLabels;
 }) {
   const action = payWithMpesa.bind(null, experienceId);
   const [state, formAction] = useActionState<CheckoutState, FormData>(action, {
@@ -36,20 +46,18 @@ export function CheckoutForm({
       <input type="hidden" name="slot" value={slotId} />
       <input type="hidden" name="party" value={party} />
       <TextField
-        label="M-Pesa number"
+        label={labels.mpesaLabel}
         name="phone"
         type="tel"
         inputMode="tel"
         autoComplete="tel"
         defaultValue={defaultPhone}
         placeholder="0712 345 678"
-        hint="We'll send a prompt to this number — enter your M-Pesa PIN to confirm."
+        hint={labels.mpesaHint}
         error={state.status === "error" ? state.message : undefined}
       />
-      <PayButton />
-      <p className="text-caption text-muted text-center">
-        You only pay once you approve the prompt on your phone.
-      </p>
+      <PayButton idle={labels.pay} busy={labels.paying} />
+      <p className="text-caption text-muted text-center">{labels.payNote}</p>
     </form>
   );
 }

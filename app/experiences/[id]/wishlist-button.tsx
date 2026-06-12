@@ -4,12 +4,21 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toggleWishlist } from "./wishlist-actions";
 
+export type WishlistLabels = {
+  saved: string;
+  save: string;
+  removeAria: string;
+  saveAria: string;
+};
+
 export function WishlistButton({
   experienceId,
   initialSaved,
+  labels,
 }: {
   experienceId: string;
   initialSaved: boolean;
+  labels: WishlistLabels;
 }) {
   const router = useRouter();
   const [saved, setSaved] = useState(initialSaved);
@@ -34,13 +43,13 @@ export function WishlistButton({
       onClick={onClick}
       disabled={pending}
       aria-pressed={saved}
-      aria-label={saved ? "Remove from saved" : "Save for later"}
+      aria-label={saved ? labels.removeAria : labels.saveAria}
       className="border-hairline text-small text-foreground inline-flex min-h-12 items-center gap-2 rounded-base border px-4 disabled:opacity-60"
     >
       <span aria-hidden className={saved ? "text-sunset" : "text-muted"}>
         {saved ? "♥" : "♡"}
       </span>
-      {saved ? "Saved" : "Save"}
+      {saved ? labels.saved : labels.save}
     </button>
   );
 }

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { fetchExperienceDetail } from "@/lib/experiences";
 import { formatKes, formatSlotDateTime } from "@/lib/format";
+import { getT } from "@/lib/i18n";
 import { CheckoutForm } from "./checkout-form";
 
 export default async function CheckoutPage({
@@ -18,6 +19,7 @@ export default async function CheckoutPage({
   // Sign-in (phone OTP) is required to pay — it's the lightweight account.
   const returnTo = `/experiences/${id}/book?slot=${slotId ?? ""}&party=${partyRaw ?? "1"}`;
   const profile = await requireProfile(returnTo);
+  const t = await getT();
 
   const exp = await fetchExperienceDetail(id);
   if (!exp) notFound();
@@ -26,10 +28,14 @@ export default async function CheckoutPage({
   if (!slot) {
     return (
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-5 py-8">
-        <h1 className="text-h1 text-foreground">That slot isn&apos;t available</h1>
-        <p className="text-body text-muted">Pick another date for {exp.title}.</p>
+        <h1 className="text-h1 text-foreground">
+          {t("checkout_unavailable_title")}
+        </h1>
+        <p className="text-body text-muted">
+          {t("checkout_unavailable_body").replace("{title}", exp.title)}
+        </p>
         <Link href={`/experiences/${exp.id}`} className="text-small text-sunset">
-          ← Back to the experience
+          ← {t("checkout_back_experience")}
         </Link>
       </main>
     );
@@ -41,17 +47,17 @@ export default async function CheckoutPage({
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 py-8">
       <Link href={`/experiences/${exp.id}`} className="text-small text-muted">
-        ← Back
+        ← {t("checkout_back")}
       </Link>
-      <h1 className="text-h1 text-foreground">Confirm and pay</h1>
+      <h1 className="text-h1 text-foreground">{t("checkout_title")}</h1>
 
       <div className="border-hairline rounded-card bg-surface flex flex-col gap-3 border p-4">
-        <Row label="Experience" value={exp.title} />
-        <Row label="Date" value={formatSlotDateTime(slot.startAt)} />
-        <Row label="Guests" value={String(party)} />
-        <Row label="Meeting point" value={exp.meetingPoint ?? "—"} />
+        <Row label={t("checkout_experience")} value={exp.title} />
+        <Row label={t("checkout_date")} value={formatSlotDateTime(slot.startAt)} />
+        <Row label={t("checkout_guests")} value={String(party)} />
+        <Row label={t("checkout_meeting")} value={exp.meetingPoint ?? "—"} />
         <div className="border-hairline flex items-center justify-between border-t pt-3">
-          <span className="text-h3 text-foreground">Total</span>
+          <span className="text-h3 text-foreground">{t("checkout_total")}</span>
           <span className="text-h2 text-foreground">{formatKes(total)}</span>
         </div>
       </div>
@@ -65,6 +71,13 @@ export default async function CheckoutPage({
         slotId={slot.id}
         party={party}
         defaultPhone={profile.phone ?? ""}
+        labels={{
+          mpesaLabel: t("checkout_mpesa_label"),
+          mpesaHint: t("checkout_mpesa_hint"),
+          pay: t("checkout_pay"),
+          paying: t("checkout_paying"),
+          payNote: t("checkout_pay_note"),
+        }}
       />
     </main>
   );

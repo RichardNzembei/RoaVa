@@ -8,16 +8,34 @@ import { Select } from "@/components/ui/select";
 import { CATEGORIES, COUNTIES } from "@/lib/catalog";
 import { createExperience, type FormState } from "../actions";
 
-function SubmitButton() {
+export type CreateExperienceLabels = {
+  title: string;
+  titlePh: string;
+  category: string;
+  catPh: string;
+  county: string;
+  countyPh: string;
+  price: string;
+  pricePh: string;
+  priceHint: string;
+  creating: string;
+  createDraft: string;
+};
+
+function SubmitButton({ idle, busy }: { idle: string; busy: string }) {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" fullWidth disabled={pending} aria-busy={pending}>
-      {pending ? "Creating…" : "Create draft"}
+      {pending ? busy : idle}
     </Button>
   );
 }
 
-export function CreateExperienceForm() {
+export function CreateExperienceForm({
+  labels,
+}: {
+  labels: CreateExperienceLabels;
+}) {
   const [state, action] = useActionState<FormState, FormData>(createExperience, {
     status: "idle",
   });
@@ -25,35 +43,35 @@ export function CreateExperienceForm() {
   return (
     <form action={action} className="flex flex-col gap-5">
       <TextField
-        label="Title"
+        label={labels.title}
         name="title"
         autoFocus
-        placeholder="e.g. Sunrise hike up Ngong Hills"
+        placeholder={labels.titlePh}
         error={state.status === "error" ? state.message : undefined}
       />
       <Select
-        label="Category"
+        label={labels.category}
         name="category"
-        placeholder="Choose a category"
+        placeholder={labels.catPh}
         defaultValue=""
         options={CATEGORIES}
       />
       <Select
-        label="County"
+        label={labels.county}
         name="county"
-        placeholder="Choose a county"
+        placeholder={labels.countyPh}
         defaultValue=""
         options={COUNTIES}
       />
       <TextField
-        label="Price per person (KES)"
+        label={labels.price}
         name="base_price_kes"
         type="text"
         inputMode="numeric"
-        placeholder="e.g. 3500"
-        hint="You can fine-tune everything else next."
+        placeholder={labels.pricePh}
+        hint={labels.priceHint}
       />
-      <SubmitButton />
+      <SubmitButton idle={labels.createDraft} busy={labels.creating} />
     </form>
   );
 }

@@ -6,14 +6,30 @@ import { Button } from "@/components/ui/button";
 import { formatKes, formatSlotDateTime } from "@/lib/format";
 import type { DetailSlot } from "@/lib/experiences";
 
+// Localised strings passed in from the (server) detail page.
+export type SlotPickerLabels = {
+  chooseDate: string;
+  guests: string;
+  seats: string; // "{n} seats"
+  onlyLeft: string; // "Only {n} left"
+  fewer: string;
+  more: string;
+  guestOne: string;
+  guestMany: string;
+  continue: string;
+  none: string;
+};
+
 export function SlotPicker({
   experienceId,
   slots,
   maxPartySize,
+  labels,
 }: {
   experienceId: string;
   slots: DetailSlot[];
   maxPartySize: number;
+  labels: SlotPickerLabels;
 }) {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -24,9 +40,7 @@ export function SlotPicker({
   if (slots.length === 0) {
     return (
       <div className="border-hairline rounded-card bg-surface border p-4">
-        <p className="text-small text-muted">
-          No upcoming dates right now. Check back soon or save it for later.
-        </p>
+        <p className="text-small text-muted">{labels.none}</p>
       </div>
     );
   }
@@ -39,7 +53,7 @@ export function SlotPicker({
   return (
     <div className="border-hairline rounded-card bg-surface flex flex-col gap-4 border p-4">
       <div className="flex flex-col gap-2">
-        <span className="text-small text-foreground">Choose a date</span>
+        <span className="text-small text-foreground">{labels.chooseDate}</span>
         <div className="flex flex-col gap-2">
           {slots.map((slot) => {
             const active = slot.id === selected.id;
@@ -64,7 +78,9 @@ export function SlotPicker({
                 <span
                   className={`text-caption ${low ? "text-warning" : "text-muted"}`}
                 >
-                  {low ? `Only ${slot.seatsLeft} left` : `${slot.seatsLeft} seats`}
+                  {low
+                    ? labels.onlyLeft.replace("{n}", String(slot.seatsLeft))
+                    : labels.seats.replace("{n}", String(slot.seatsLeft))}
                 </span>
               </button>
             );
@@ -73,11 +89,11 @@ export function SlotPicker({
       </div>
 
       <div className="flex items-center justify-between">
-        <span className="text-small text-foreground">Guests</span>
+        <span className="text-small text-foreground">{labels.guests}</span>
         <div className="flex items-center gap-3">
           <button
             type="button"
-            aria-label="Fewer guests"
+            aria-label={labels.fewer}
             onClick={() => setParty((p) => Math.max(1, p - 1))}
             disabled={safeParty <= 1}
             className="border-hairline text-h3 text-foreground flex h-10 w-10 items-center justify-center rounded-full border disabled:opacity-40"
@@ -89,7 +105,7 @@ export function SlotPicker({
           </span>
           <button
             type="button"
-            aria-label="More guests"
+            aria-label={labels.more}
             onClick={() => setParty((p) => Math.min(maxParty, p + 1))}
             disabled={safeParty >= maxParty}
             className="border-hairline text-h3 text-foreground flex h-10 w-10 items-center justify-center rounded-full border disabled:opacity-40"
@@ -104,7 +120,7 @@ export function SlotPicker({
           <span className="text-h2 text-foreground">{formatKes(total)}</span>
           <span className="text-caption text-muted">
             {formatKes(selected.priceKes)} × {safeParty}{" "}
-            {safeParty === 1 ? "guest" : "guests"}
+            {safeParty === 1 ? labels.guestOne : labels.guestMany}
           </span>
         </div>
         <Button
@@ -115,7 +131,7 @@ export function SlotPicker({
             )
           }
         >
-          Continue
+          {labels.continue}
         </Button>
       </div>
     </div>
