@@ -63,13 +63,18 @@ Set these in Vercel (Project → Settings → Environment Variables). Local dev 
 1. Create an IntaSend account; complete KYC; get publishable + secret keys (sandbox first).
 2. Set the keys + `INTASEND_TEST_MODE=true` in Vercel; the app switches from mock to the
    IntaSend provider automatically when keys are present.
-3. Configure the IntaSend webhook to point at `https://<your-domain>/api/payments/intasend/webhook`
-   and set `INTASEND_WEBHOOK_CHALLENGE` to the same value.
+3. Configure the IntaSend webhooks:
+   - collection callback → `https://<your-domain>/api/payments/intasend/webhook`
+   - B2C / send-money (payout) callback → `https://<your-domain>/api/payouts/intasend/webhook`
+   Set `INTASEND_WEBHOOK_CHALLENGE` to the shared secret (verified on both).
 4. **Verify the IntaSend client** (`lib/payments/intasend.ts`) against current IntaSend API
-   docs — endpoint paths and field names were written to spec and need confirming with a real
-   sandbox account before trusting them.
+   docs — both the STK collection AND the B2C `send-money` initiate/status/callback shapes were
+   written to spec and need confirming with a real sandbox account before trusting them. The
+   send-money approval step (`requires_approval`) in particular must be validated.
 5. Confirm the non-custodial settlement structure (collect → disburse operator share, retain
-   commission) with IntaSend — this is also the legal question in §7.
+   commission) with IntaSend — this is also the legal question in §7. The disbursement code path
+   (initiate → pending → confirm on callback, idempotent, with reconciliation) is built and
+   tested against the mock; only the live IntaSend wiring + real-money test remain.
 
 ## 5. Africa's Talking (SMS)
 
@@ -129,7 +134,15 @@ forwarding point for swallowed errors.
 ## Remaining work
 
 **Done since the initial build:** text search (`/experiences?q=`), review photos upload,
-and EN/SW localization now covers the entry funnel **+ discovery feed + tickets list**.
+EN/SW localization across the entry funnel **+ discovery feed + tickets list**, and the
+**operator payout / disbursement module** (the settle half of §3): `payouts` ledger + RLS,
+idempotent initiate/confirm/fail functions with the net-share split, provider `disburse()`
+(mock + IntaSend B2C), payout webhook + reconciliation, and operator UI states. Verified
+end-to-end against the mock; live IntaSend B2C wiring + real-money test are owner-gated (§4).
+
+> **Note:** the payouts migration (`supabase/migrations/20260612160000_payouts.sql`) is applied
+> locally and committed. It must also be pushed to the **cloud** DB (`supabase db push`, or paste
+> it in the SQL editor) before the `/operator/payouts` page works in production.
 
 **Buildable (lower priority):**
 - Finish localization: experience detail + slot picker, checkout + booking waiting/result,
