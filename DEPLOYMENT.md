@@ -145,11 +145,12 @@ end-to-end against the mock; live IntaSend B2C wiring + real-money test are owne
 > it in the SQL editor) before the `/operator/payouts` page works in production.
 
 **Buildable (lower priority):**
-- ~~Finish localization~~ **Done** — EN/SW now covers every screen (detail, slot picker,
-  checkout, booking result, review, search/wishlist, and all operator screens). Server
-  components use `getT()`; client components take a typed labels bundle.
-- Product analytics (PostHog — needs an owner key).
-- Server-action *error messages* are still English-only (they return literal strings from
-  `actions.ts` files); localizing those would need the actions to read the locale cookie.
+- ~~Finish localization~~ **Done** — EN/SW covers every screen *and* all server-action /
+  validation error messages (actions read the locale cookie via `getT()`). The app is fully
+  bilingual end-to-end.
+- ~~Image fallback hardening~~ **Done** — `<ExperienceImage>` degrades to a letter-placeholder
+  on load error (no broken frame/alt text).
+- ~~Lint cleanup~~ **Done** — `pnpm lint` is at 0 errors.
+- Product analytics (**PostHog**) — wiring is buildable; needs an owner key.
 
 **Owner-gated** (deploy, IntaSend/AT/SMS keys, Sentry DSN, real-device test, legal, licensed imagery) — see the sections above.
