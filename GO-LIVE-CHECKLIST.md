@@ -40,6 +40,10 @@ run in parallel with everything else. Owner + Kenyan counsel. [DEPLOYMENT.md §7
         ("Test gorge kayak adventure") was backfilled on **local + cloud** — 0 published listings now
         lack a policy. (Backfill is data-only; the durable guarantee is the publish guard + fallback,
         not the seed row.)
+      - [x] *Publish guard browser-verified 2026-06-13.* Created a draft satisfying every other
+        publish requirement (photo, meeting point, future slot) but no policy, signed in as the
+        owning operator, clicked Publish → blocked with "Add a cancellation policy before
+        publishing." and the listing stayed `draft` (DB-confirmed). Test draft cleaned up.
 
 ---
 
