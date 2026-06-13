@@ -157,6 +157,12 @@ these invariants; this re-verifies them against live rails. [DEPLOYMENT.md §7 t
 > disposable. A genuine prod check-in test therefore needs a **freshly issued** ticket, which needs
 > a confirmed booking (Phase 3 payments) — so run these two scan checks only *after* the secret is
 > set and a real ticket exists.
+>
+> ✅ **Local signing verified 2026-06-13.** The HMAC sign→verify roundtrip is sound on local: all 3
+> app-issued tickets recompute to their stored `bookingId.nonce.HMAC-SHA256` payload against the
+> local `TICKET_SIGNING_SECRET`, and a tampered signature is rejected (`timingSafeEqual` fails). So
+> the *code* is correct; only the prod secret (above) is outstanding. Note: the local dev secret is
+> 23 chars — fine for dev, but prod must use `openssl rand -hex 32` (don't copy the short dev value).
 - [ ] **Gifting:** book with gift toggle → pay → buyer gets claim link → recipient claims at
       `/gift/[code]` → ticket moves to recipient; second claim → already claimed. *(Proven on
       local incl. browser claim; this confirms it over live M-Pesa.)*
