@@ -65,7 +65,8 @@ Get the app running on real cloud infra. [DEPLOYMENT.md §1, §2, §3]
       **`TICKET_SIGNING_SECRET` and `CRON_SECRET` are NOT set yet** — generate with*
       `openssl rand -hex 32` *and* `openssl rand -hex 16`*, add in Vercel, redeploy. Until then
       `verifyTicket()`/`signTicket()` throw on call (no fallback — see Phase 5 note) so prod
-      check-in can't run, and the reconciliation cron is unprotected.*
+      check-in can't run, and the reconciliation cron returns 503 on prod (closed, not open — see
+      Phase 3 note) so it doesn't run at all.*
 - [ ] Note the stable HTTPS prod URL (needed for IntaSend webhooks and the Supabase Site URL).
 
 ---
@@ -105,6 +106,14 @@ Until this is wired, prod can complete **no** payment (the dev mock is disabled 
       `lib/sms/index.ts` confirmed against AT docs. Without keys, SMS only logs server-side.
 - [ ] Reconciliation cron live (`vercel.json`, daily on Hobby). For tighter recovery, upgrade to
       Pro (`*/5 * * * *`) or hit the endpoint from an external scheduler. [DEPLOYMENT.md §3]
+      - [x] *Cron-secret protection verified 2026-06-13 (local).* `GET /api/cron/reconcile-payments`
+        returns **401** with no header and **401** with a wrong `Bearer`, and **200** + the
+        reconcile result only with the correct `CRON_SECRET`. Safe failure mode confirmed in code:
+        with the secret **unset in production** the route returns **503 "cron secret not configured"**
+        (closed, never runs unauthenticated). **Consequence on prod now:** `CRON_SECRET` is unset
+        (Phase 1), so the cron is currently 503/non-functional — the abandoned-tab payment-recovery
+        backstop is off until the secret is set in Vercel + redeploy. (The waiting screen still
+        self-reconciles within ~1–2 min while a user's tab is open; only the backstop is affected.)
 
 ---
 
