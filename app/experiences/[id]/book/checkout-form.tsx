@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/text-field";
@@ -12,6 +12,10 @@ export type CheckoutLabels = {
   pay: string;
   paying: string;
   payNote: string;
+  giftToggle: string;
+  giftRecipientLabel: string;
+  giftRecipientHint: string;
+  giftMessageLabel: string;
 };
 
 function PayButton({ idle, busy }: { idle: string; busy: string }) {
@@ -40,6 +44,7 @@ export function CheckoutForm({
   const [state, formAction] = useActionState<CheckoutState, FormData>(action, {
     status: "idle",
   });
+  const [gift, setGift] = useState(false);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -56,6 +61,40 @@ export function CheckoutForm({
         hint={labels.mpesaHint}
         error={state.status === "error" ? state.message : undefined}
       />
+
+      {/* Gifting (diaspora slice): book for someone else; they redeem a code. */}
+      <label className="flex min-h-12 items-center gap-3">
+        <input
+          type="checkbox"
+          name="gift"
+          checked={gift}
+          onChange={(e) => setGift(e.target.checked)}
+          className="accent-sunset h-4 w-4"
+        />
+        <span className="text-small text-foreground">{labels.giftToggle}</span>
+      </label>
+
+      {gift ? (
+        <div className="border-hairline bg-surface flex flex-col gap-4 rounded-card border p-4">
+          <TextField
+            label={labels.giftRecipientLabel}
+            name="recipient"
+            type="text"
+            inputMode="email"
+            autoComplete="off"
+            placeholder="0712 345 678 / them@example.com"
+            hint={labels.giftRecipientHint}
+          />
+          <TextField
+            label={labels.giftMessageLabel}
+            name="gift_message"
+            type="text"
+            autoComplete="off"
+            placeholder="Enjoy! 🎁"
+          />
+        </div>
+      ) : null}
+
       <PayButton idle={labels.pay} busy={labels.paying} />
       <p className="text-caption text-muted text-center">{labels.payNote}</p>
     </form>

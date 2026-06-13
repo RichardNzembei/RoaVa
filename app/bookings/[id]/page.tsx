@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { manualPayment } from "@/lib/env";
+import { manualPayment, publicEnv } from "@/lib/env";
 import { formatKes, formatSlotDateTime } from "@/lib/format";
 import { getT } from "@/lib/i18n";
+import { getGiftForBooking } from "@/lib/gifts";
 import { BookingStatus } from "./booking-status";
+import { GiftShare } from "./gift-share";
 
 export default async function BookingStatusPage({
   params,
@@ -30,6 +32,9 @@ export default async function BookingStatusPage({
 
   const experience = booking.experiences as unknown as { title: string };
   const slot = booking.availability_slots as unknown as { start_at: string };
+
+  // If this booking was bought as a gift, surface the shareable claim link.
+  const gift = await getGiftForBooking(booking.id);
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 py-10">
@@ -83,6 +88,22 @@ export default async function BookingStatusPage({
           },
         }}
       />
+
+      {gift ? (
+        <GiftShare
+          claimUrl={`${publicEnv.siteUrl}/gift/${gift.redemption_code}`}
+          claimed={Boolean(gift.claimed_at)}
+          recipient={gift.recipient_phone ?? gift.recipient_email ?? ""}
+          labels={{
+            title: gift.claimed_at ? t("gift_share_claimed_title") : t("gift_share_title"),
+            body: gift.claimed_at
+              ? t("gift_share_claimed_body")
+              : t("gift_share_body"),
+            copy: t("gift_share_copy"),
+            copied: t("gift_share_copied"),
+          }}
+        />
+      ) : null}
     </main>
   );
 }

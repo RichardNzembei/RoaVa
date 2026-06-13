@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { startBooking } from "@/lib/booking";
+import { createGift } from "@/lib/gifts";
 
 export type CheckoutState =
   | { status: "idle" }
@@ -31,6 +32,23 @@ export async function payWithMpesa(
 
   if (!result.ok) {
     return { status: "error", message: result.error };
+  }
+
+  // Gifting (diaspora slice): if the buyer is booking for someone else, record
+  // the recipient + a claim code. Never block the paid booking on this.
+  const isGift = String(formData.get("gift") ?? "") === "on";
+  const recipient = String(formData.get("recipient") ?? "").trim();
+  if (isGift && recipient) {
+    try {
+      await createGift({
+        bookingId: result.bookingId,
+        buyerProfileId: profile.id,
+        recipientRaw: recipient,
+        message: String(formData.get("gift_message") ?? ""),
+      });
+    } catch {
+      // Booking stands as a normal booking for the buyer; gifting is best-effort.
+    }
   }
 
   redirect(`/bookings/${result.bookingId}`);

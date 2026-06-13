@@ -213,6 +213,67 @@ export type Database = {
           },
         ]
       }
+      gifts: {
+        Row: {
+          booking_id: string
+          buyer_profile_id: string
+          claimed_at: string | null
+          claimed_by_profile_id: string | null
+          created_at: string
+          id: string
+          message: string | null
+          recipient_email: string | null
+          recipient_phone: string | null
+          redemption_code: string
+        }
+        Insert: {
+          booking_id: string
+          buyer_profile_id: string
+          claimed_at?: string | null
+          claimed_by_profile_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          recipient_email?: string | null
+          recipient_phone?: string | null
+          redemption_code?: string
+        }
+        Update: {
+          booking_id?: string
+          buyer_profile_id?: string
+          claimed_at?: string | null
+          claimed_by_profile_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          recipient_email?: string | null
+          recipient_phone?: string | null
+          redemption_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gifts_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gifts_buyer_profile_id_fkey"
+            columns: ["buyer_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gifts_claimed_by_profile_id_fkey"
+            columns: ["claimed_by_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operator_payouts: {
         Row: {
           operator_id: string
@@ -618,6 +679,7 @@ export type Database = {
         Args: { p_key: string; p_max: number; p_window_seconds: number }
         Returns: boolean
       }
+      claim_gift: { Args: { p_code: string }; Returns: string }
       confirm_booking_payment: {
         Args: { p_provider_ref: string; p_raw?: Json }
         Returns: string

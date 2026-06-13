@@ -77,6 +77,10 @@ export default async function CheckoutPage({
           pay: t("checkout_pay"),
           paying: t("checkout_paying"),
           payNote: t("checkout_pay_note"),
+          giftToggle: t("gift_toggle"),
+          giftRecipientLabel: t("gift_recipient_label"),
+          giftRecipientHint: t("gift_recipient_hint"),
+          giftMessageLabel: t("gift_message_label"),
         }}
       />
     </main>
