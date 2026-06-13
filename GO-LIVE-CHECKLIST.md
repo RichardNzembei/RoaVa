@@ -32,8 +32,14 @@ run in parallel with everything else. Owner + Kenyan counsel. [DEPLOYMENT.md §7
       drafted 2026-06-13 from the real model (non-custodial marketplace, `[10%]` commission, slot
       bookings, single-use QR, per-experience cancellation policy shown before payment). **Still
       owner/counsel-gated before done:** legal review, refund mechanics + who bears commission on
-      refunds, liability caps, tax/insurance terms, governing-law venue, and confirming the
-      cancellation/refund policy is actually surfaced *before* payment in the booking UI.
+      refunds, liability caps, tax/insurance terms, governing-law venue.
+      - [x] *Cancellation/refund terms surfaced before payment — verified & enforced 2026-06-13
+        (commit `dcae0b6`).* Publish now requires a non-empty `cancellation_policy`; detail page and
+        checkout always render the terms (platform-default fallback when unset), confirmed in the
+        browser above the pay/continue action on both surfaces. The one policy-less seed listing
+        ("Test gorge kayak adventure") was backfilled on **local + cloud** — 0 published listings now
+        lack a policy. (Backfill is data-only; the durable guarantee is the publish guard + fallback,
+        not the seed row.)
 
 ---
 
