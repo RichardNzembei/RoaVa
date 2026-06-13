@@ -22,8 +22,12 @@ run in parallel with everything else. Owner + Kenyan counsel. [DEPLOYMENT.md §7
 - [ ] **PSP / money-transmitter opinion.** Confirm collect-and-disburse (non-custodial, no funds
       held) keeps Roava out of CBK PSP territory. Validate the exact settlement structure with
       IntaSend *and* counsel together.
-- [ ] **Data Protection Act (2019).** Privacy policy published, data minimisation reviewed, and a
-      decision on whether ODPC registration as a data controller applies.
+- [x] **Data Protection Act (2019) — draft policy prepared.** `PRIVACY-POLICY.md` drafted
+      2026-06-13 from the real data model + provider list (`[…]` placeholders for entity, contact,
+      DPO, retention periods, transfer mechanism). **Still owner/counsel-gated before it counts as
+      done:** legal review, lawful-basis confirmation, retention periods, international-transfer
+      mechanism, cookie/consent approach, **ODPC registration decision**, and actual publication +
+      data-minimisation review.
 - [ ] **Customer terms.** Refund/cancellation policy, terms of service, operator agreement —
       drafted, reviewed, and the cancellation/refund terms wired to show *before* payment.
 
