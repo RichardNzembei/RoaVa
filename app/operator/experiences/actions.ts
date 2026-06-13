@@ -127,7 +127,7 @@ export async function publishExperience(
 
   const { data: exp } = await supabase
     .from("experiences")
-    .select("id, title, base_price_kes, images, meeting_point")
+    .select("id, title, base_price_kes, images, meeting_point, cancellation_policy")
     .eq("id", experienceId)
     .maybeSingle();
 
@@ -137,6 +137,11 @@ export async function publishExperience(
   }
   if (!exp.meeting_point) {
     return { status: "error", message: t("err_exp_meeting") };
+  }
+  // Cancellation terms must be set before a listing goes live — they are shown
+  // to guests before payment (CLAUDE.md §8 trust requirement).
+  if (!exp.cancellation_policy || exp.cancellation_policy.trim().length === 0) {
+    return { status: "error", message: t("err_exp_cancellation") };
   }
 
   const { count } = await supabase

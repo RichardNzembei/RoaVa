@@ -211,18 +211,19 @@ export default async function ExperienceDetailPage({
           </Reveal>
         ) : null}
 
-        {/* Cancellation terms — shown BEFORE payment (trust). */}
-        {exp.cancellationPolicy ? (
-          <Reveal
-            as="section"
-            className="border-hairline rounded-card bg-surface shadow-card flex flex-col gap-1 border p-4"
-          >
-            <h2 className="text-h3 text-foreground">
-              {t("detail_cancellation")}
-            </h2>
-            <p className="text-small text-muted">{exp.cancellationPolicy}</p>
-          </Reveal>
-        ) : null}
+        {/* Cancellation terms — shown BEFORE payment (trust). Falls back to the
+            platform default when the operator hasn't set a specific policy. */}
+        <Reveal
+          as="section"
+          className="border-hairline rounded-card bg-surface shadow-card flex flex-col gap-1 border p-4"
+        >
+          <h2 className="text-h3 text-foreground">
+            {t("detail_cancellation")}
+          </h2>
+          <p className="text-small text-muted">
+            {exp.cancellationPolicy?.trim() || t("cancellation_default")}
+          </p>
+        </Reveal>
 
         {/* Reviews */}
         <Reveal as="section" className="flex flex-col gap-3">

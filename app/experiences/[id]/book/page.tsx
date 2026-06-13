@@ -62,9 +62,11 @@ export default async function CheckoutPage({
         </div>
       </div>
 
-      {exp.cancellationPolicy ? (
-        <p className="text-caption text-muted">{exp.cancellationPolicy}</p>
-      ) : null}
+      {/* Cancellation terms always shown BEFORE payment — fall back to the
+          platform default when the operator hasn't set a specific policy. */}
+      <p className="text-caption text-muted">
+        {exp.cancellationPolicy?.trim() || t("cancellation_default")}
+      </p>
 
       <CheckoutForm
         experienceId={exp.id}

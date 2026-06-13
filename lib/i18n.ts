@@ -141,6 +141,8 @@ const en = {
   hour_many: "hours",
   detail_meeting: "Meeting point",
   detail_cancellation: "Cancellation policy",
+  cancellation_default:
+    "No specific cancellation policy was set for this experience. For changes or cancellations, contact the operator; refunds follow our terms of service.",
   detail_reviews: "Reviews",
   detail_no_reviews: "No reviews yet — be the first after your visit.",
   detail_price_note:
@@ -466,6 +468,7 @@ const en = {
   err_exp_notfound: "Experience not found.",
   err_exp_photo: "Add at least one photo before publishing.",
   err_exp_meeting: "Add a meeting point before publishing.",
+  err_exp_cancellation: "Add a cancellation policy before publishing.",
   err_exp_slotreq: "Add at least one upcoming time slot before publishing.",
   err_exp_publish: "We couldn't publish. Please try again.",
   err_img_path: "Unexpected upload path.",
@@ -623,6 +626,8 @@ const sw: Record<TranslationKey, string> = {
   hour_many: "saa",
   detail_meeting: "Mahali pa kukutana",
   detail_cancellation: "Sera ya kughairi",
+  cancellation_default:
+    "Hakuna sera maalum ya kughairi iliyowekwa kwa tukio hili. Kwa mabadiliko au kughairi, wasiliana na mwendeshaji; marejesho hufuata masharti yetu ya huduma.",
   detail_reviews: "Maoni",
   detail_no_reviews: "Hakuna maoni bado — kuwa wa kwanza baada ya ziara yako.",
   detail_price_note:
@@ -932,6 +937,7 @@ const sw: Record<TranslationKey, string> = {
   err_exp_notfound: "Tukio halikupatikana.",
   err_exp_photo: "Ongeza angalau picha moja kabla ya kuchapisha.",
   err_exp_meeting: "Ongeza mahali pa kukutana kabla ya kuchapisha.",
+  err_exp_cancellation: "Ongeza sera ya kughairi kabla ya kuchapisha.",
   err_exp_slotreq: "Ongeza angalau nafasi moja ya muda ijayo kabla ya kuchapisha.",
   err_exp_publish: "Hatukuweza kuchapisha. Tafadhali jaribu tena.",
   err_img_path: "Njia ya upakiaji isiyotarajiwa.",
