@@ -28,8 +28,12 @@ run in parallel with everything else. Owner + Kenyan counsel. [DEPLOYMENT.md §7
       done:** legal review, lawful-basis confirmation, retention periods, international-transfer
       mechanism, cookie/consent approach, **ODPC registration decision**, and actual publication +
       data-minimisation review.
-- [ ] **Customer terms.** Refund/cancellation policy, terms of service, operator agreement —
-      drafted, reviewed, and the cancellation/refund terms wired to show *before* payment.
+- [x] **Customer terms — drafts prepared.** `TERMS-OF-SERVICE.md` + `OPERATOR-AGREEMENT.md`
+      drafted 2026-06-13 from the real model (non-custodial marketplace, `[10%]` commission, slot
+      bookings, single-use QR, per-experience cancellation policy shown before payment). **Still
+      owner/counsel-gated before done:** legal review, refund mechanics + who bears commission on
+      refunds, liability caps, tax/insurance terms, governing-law venue, and confirming the
+      cancellation/refund policy is actually surfaced *before* payment in the booking UI.
 
 ---
 
