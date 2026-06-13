@@ -148,6 +148,7 @@ forwarding point for swallowed errors.
 - [ ] Missed webhook → the reconciliation cron recovers state within its window.
 - [ ] Scan a ticket twice (second → already used).
 - [ ] Scan a ticket as the wrong operator (→ not your experience).
+- [ ] **Gifting** (diaspora slice): book with "Gift this to someone" → pay → buyer gets the claim link → recipient opens `/gift/[code]`, signs in, claims → the ticket moves to the recipient's wallet; a second claim → "already claimed". *Needs real M-Pesa to complete on prod — the gift flow rides the normal payment path, and the dev mock callback is disabled in production.*
 - [ ] Confirm first-content < ~3s on metered 4G; ticket viewable offline.
 
 > The mock provider + DB-level tests already prove the invariants (no oversell, idempotency,
