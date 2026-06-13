@@ -1,6 +1,6 @@
 # Roava v1 — build plan
 
-A concrete, code-from-it plan for the first version, based on the decisions made: a discovery + booking PWA for **day-trips and experiences near Nairobi**, with **operator self-serve listing**, built by a capable solo developer using **Claude Code**, on **Next.js + Supabase**, with **M-Pesa via an aggregator (IntaSend)** on a **pass-through (non-custodial) money model**, phone-OTP auth, PWA-first.
+A concrete, code-from-it plan for the first version, based on the decisions made: a discovery + booking PWA for **day-trips and experiences near Nairobi**, with **operator self-serve listing**, built by a capable solo developer using **Claude Code**, on **Next.js + Supabase**, with **M-Pesa via an aggregator (IntaSend)** on a **pass-through (non-custodial) money model**, passwordless auth (phone-OTP, email-OTP, and Google), PWA-first.
 
 *This is a product/engineering plan, not legal or financial advice. Two compliance items (payments structure and data protection) need a Kenyan lawyer's eye before launch — flagged in the pre-launch checklist.*
 
@@ -28,7 +28,11 @@ A concrete, code-from-it plan for the first version, based on the decisions made
 
 **The money model (non-negotiable structure).** Funds flow through IntaSend's licensed rails, not your own ledger. Collect the payment, then disburse the operator's share via the provider, taking your commission as a defined fee/split — so you are not operating as a money transmitter holding customer funds. Confirm the exact settlement/split structure with IntaSend and a lawyer to stay clear of CBK PSP obligations (see §7).
 
-**An auth detail to decide early.** Supabase's built-in phone-OTP uses supported SMS providers (Twilio, MessageBird, Vonage, etc.) — Africa's Talking isn't a native Supabase auth provider. Two clean options: (a) use a Supabase-supported provider for the auth OTP and Africa's Talking for transactional SMS (simplest), or (b) build a custom OTP flow on Africa's Talking and mint Supabase sessions yourself. Pick (a) for v1 speed.
+**Auth methods (shipped).** v1 offers three passwordless sign-in methods, all via Supabase Auth: **phone-OTP** (primary), **email-OTP**, and **Google OAuth**. No passwords. A few practical notes from the build:
+- Phone-OTP needs a *Supabase-supported* SMS provider (Twilio/MessageBird/Vonage) — Africa's Talking is **not** a native Supabase auth provider, so it's used for transactional SMS only (confirmations), not the auth OTP.
+- Email-OTP is a 6-digit code (to match the phone UX), not a magic link — so the verify screen is identical across phone/email. This requires the email template to surface `{{ .Token }}` and "Confirm email" to be off (the default template sends a link, and a link dead-ends on the app's `/auth/callback` exchange if used as the code path). It needs a transactional SMTP provider (Resend with a verified domain, or SendGrid/Brevo single-sender) for real delivery; Gmail SMTP works for testing only.
+- Google OAuth uses an OAuth client (created in Google Cloud) wired into Supabase's Google provider, with the app's `/auth/callback` doing the PKCE code exchange. Google users have no phone; their name is pre-filled from the provider so they skip onboarding.
+- Identity model: `profiles.phone` and `profiles.email` are both nullable; the on-signup trigger captures whichever identifiers (and name) the chosen method provides.
 
 ---
 
@@ -38,7 +42,7 @@ Core entities (Postgres, with RLS). Fields are indicative, not exhaustive.
 
 | Table | Key fields | Notes |
 |---|---|---|
-| `profiles` | id (= auth user), phone, name, role (consumer/operator/admin), created_at | Extends Supabase `auth.users` |
+| `profiles` | id (= auth user), phone (nullable), email (nullable), name, role (consumer/operator/admin), created_at | Extends Supabase `auth.users`. Phone/email nullable since a user may arrive via any auth method |
 | `operators` | id, owner_profile_id, business_name, bio, verified (bool), payout_msisdn, created_at | One per operator owner; `verified` drives the trust badge |
 | `experiences` | id, operator_id, title, description, category, county, area, lat, lng, meeting_point, images[], base_price_kes, duration_minutes, max_party_size, cancellation_policy, status (draft/published), created_at | The listing |
 | `availability_slots` | id, experience_id, start_at, capacity, booked_count, price_override (nullable), status | The bookable unit — many per experience |
@@ -54,7 +58,7 @@ Core entities (Postgres, with RLS). Fields are indicative, not exhaustive.
 
 ## 4. The critical flows, spec'd
 
-**Auth (phone OTP).** Enter phone → receive code → verify → session. Capture name on first sign-in. Role defaults to consumer; "become an operator" creates an `operators` row.
+**Auth (passwordless — phone, email, or Google).** Phone/email → 6-digit OTP → verify → session; or one-tap Google OAuth → `/auth/callback` exchange → session. Capture name on first sign-in (Google pre-fills it). Role defaults to consumer; the self-serve "List with RoaVa" flow creates an `operators` row and flips the role server-side.
 
 **Operator: create a listing.** Create experience (title, description, category, location + meeting point, photos, price, party-size cap, cancellation policy) → add availability slots (single or repeating, each with capacity) → publish. Image upload to Supabase Storage with client-side compression; enforce consistent aspect ratios; ship a placeholder for missing images.
 
@@ -89,7 +93,7 @@ Core entities (Postgres, with RLS). Fields are indicative, not exhaustive.
 Build **vertical slices** — one full flow working end to end before adding breadth.
 
 - **M0 — Setup.** Next.js + TS + Tailwind; wire the design tokens (Sunset/Ink/Sand palette + type scale from the design spec) into the Tailwind config; Supabase project; Vercel deploy; PWA manifest + service worker skeleton.
-- **M1 — Auth + profiles.** Phone OTP, profiles, roles, "become an operator."
+- **M1 — Auth + profiles.** Passwordless sign-in (phone-OTP + email-OTP + Google OAuth), profiles, roles, self-serve "become an operator." *(Phone-OTP was the v1 baseline; email + Google were added as alternative sign-in methods.)*
 - **M2 — Operator listings.** Create/edit experiences + availability slots + image upload; RLS policies.
 - **M3 — Discovery + detail.** Feed, search/filter, experience detail with slot picker; seed real-ish data; SSR.
 - **M4 — Booking + payments.** Atomic capacity reservation, IntaSend STK initiation, waiting screen, webhook (idempotent) + poll fallback, pending→confirmed, full failure handling + manual fallback.
@@ -113,6 +117,8 @@ Build **vertical slices** — one full flow working end to end before adding bre
 ## 8. Deferred to v2+
 
 Native apps; WhatsApp confirmations; offline gate check-in; OTA/channel-manager sync; dynamic pricing; the corporate/diaspora layer; a real recommendation engine (v1 ranking can be simple — recency, proximity, popularity); loyalty/wishlist depth; multi-city expansion.
+
+**Revisit trigger — corporate/diaspora layer.** This is demand, not supply: corporates booking group days out, diaspora gifting/booking experiences for family back home. It's high-margin (less price-sensitive, concentrated — one corporate = many seats) and it's a sales/BD effort, not new core architecture, so chasing it early would pull engineering away from the thing that actually unlocks it. The trigger to revisit is **liquidity, not a date**: enough published experiences with consistent real availability and reliable fulfillment that there's something genuinely worth selling to a corporate buyer. Good news — v1 does not paint you into a corner: `party_size` + per-slot capacity already support group bookings, and non-custodial payments mean bulk/invoice (corporate) and international card (diaspora) can bolt on later as new demand entry points without re-architecting bookings or money flow. Nothing to pre-build; just don't remove those.
 
 ---
 
