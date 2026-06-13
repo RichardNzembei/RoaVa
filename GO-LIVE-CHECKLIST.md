@@ -168,6 +168,13 @@ these invariants; this re-verifies them against live rails. [DEPLOYMENT.md §7 t
       local incl. browser claim; this confirms it over live M-Pesa.)*
 - [ ] Operator payout: complete a booking → disburse operator share → payout confirms via
       callback, commission retained, ledger correct.
+      - [x] *Full lifecycle verified on local (mock B2C) 2026-06-13.* Drove it through the operator
+        UI as Test Trails Co: Send payout → payout row `pending` + `provider_ref`, booking
+        `payout_status=pending`, badge Owed→Sending; net **2,700** = gross 3,000 − fee 300
+        (commission retained); mock success callback → payout `success`, booking `paid`, badge Paid;
+        ledger reconciled (Net 6,750 = Paid 6,750, Owed 0). **Idempotency held** — replaying the
+        callback left exactly 1 payout row, no double-pay. Same path swaps mock→IntaSend B2C in prod;
+        only live wiring + real-money test remain (Phase 3 + this row over live M-Pesa).
 - [ ] First content < ~3s on metered 4G; ticket viewable offline.
 
 ---
