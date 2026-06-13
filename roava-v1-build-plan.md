@@ -120,6 +120,8 @@ Native apps; WhatsApp confirmations; offline gate check-in; OTA/channel-manager 
 
 **Revisit trigger — corporate/diaspora layer.** This is demand, not supply: corporates booking group days out, diaspora gifting/booking experiences for family back home. It's high-margin (less price-sensitive, concentrated — one corporate = many seats) and it's a sales/BD effort, not new core architecture, so chasing it early would pull engineering away from the thing that actually unlocks it. The trigger to revisit is **liquidity, not a date**: enough published experiences with consistent real availability and reliable fulfillment that there's something genuinely worth selling to a corporate buyer. Good news — v1 does not paint you into a corner: `party_size` + per-slot capacity already support group bookings, and non-custodial payments mean bulk/invoice (corporate) and international card (diaspora) can bolt on later as new demand entry points without re-architecting bookings or money flow. Nothing to pre-build; just don't remove those.
 
+> **Update (2026-06-13):** the **diaspora gifting** slice was pulled forward and shipped (owner direction) — buy a booking for someone else, recipient redeems a code into their wallet (`gifts` table + `claim_gift()` RPC, additive, reuses the booking/ticket/payment flow). Details in `roava-corporate-diaspora-plan.md` §5. The rest of the corporate/diaspora layer stays deferred until the liquidity trigger above.
+
 ---
 
 ## 9. Driving Claude Code well for this

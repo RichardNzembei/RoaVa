@@ -1,8 +1,8 @@
 # Roava — Corporate / Diaspora demand channel (v2 plan)
 
-> **Status: deferred. Do not build until the trigger.** This is the "third" layer — a high-margin *demand* channel layered on top of the v1 supply+consumer marketplace. It is mostly a sales/BD effort, not new core architecture. Chasing it early pulls engineering away from the thing that actually unlocks it.
+> **Status: mostly deferred. One slice shipped early (diaspora gifting, 2026-06-13) at owner direction.** This is the "third" layer — a high-margin *demand* channel layered on top of the v1 supply+consumer marketplace. It is mostly a sales/BD effort, not new core architecture. Chasing it early pulls engineering away from the thing that actually unlocks it. The gifting slice was pulled forward as a contained, additive build (see §5); everything else (international card, corporate block-booking/invoice/org accounts) remains deferred until the liquidity trigger.
 >
-> *Companion to `roava-v1-build-plan.md` (§8 defers this). Product/engineering plan, not legal/financial advice — the v1 compliance items (payments structure, data protection) still govern.*
+> *Companion to `roava-v1-build-plan.md` (§8). Product/engineering plan, not legal/financial advice — the v1 compliance items (payments structure, data protection) still govern.*
 
 ---
 
@@ -52,10 +52,10 @@ v1 does not paint you into a corner. The following already exist and are reused 
 
 **Demand-gen:** diaspora community channels; "gift an experience back home" angle; foreign-currency price display.
 
-**Build, once proven:**
-1. **International card** — IntaSend cards (or Stripe) as a second collection rail; the non-custodial split is unchanged.
-2. **Gifting** — buy a ticket/voucher for someone else (recipient phone/email); recipient redeems → a normal booking + ticket. Reuses the existing ticket/QR machinery end to end.
-3. **Currency display** — show the foreign-currency equivalent; settle in KES.
+**Build:**
+1. **International card** — IntaSend cards (or Stripe) as a second collection rail; the non-custodial split is unchanged. *(Deferred.)*
+2. **Gifting — ✅ SHIPPED (2026-06-13).** Buy a booking for someone else (recipient phone/email + message); recipient redeems a code at `/gift/[code]` and the booking + ticket become theirs. Implemented additively: `gifts` table + `claim_gift()` RPC (reassigns the booking to the claimer) + RLS; checkout gift toggle; buyer's shareable claim link; recipient redemption page. Reuses the existing booking/ticket/QR + M-Pesa flow unchanged. Verified end to end (create → pay → confirm → claim transfers ownership; single-claim guard holds).
+3. **Currency display** — show the foreign-currency equivalent; settle in KES. *(Deferred.)*
 
 ## 6. Data-model deltas (additive — nothing in v1 changes)
 
@@ -79,4 +79,4 @@ Bookings, tickets, capacity reservation, RLS, and payouts are **reused unchanged
 
 ## 8. Explicitly NOT in scope now
 
-No corporate or diaspora features ship in v1. This document is the ready-to-execute plan for when liquidity arrives — and a guardrail reminder that the v1 build must keep `party_size`, per-slot capacity, and non-custodial payments intact so this can bolt on later.
+**Exception:** the **diaspora gifting** slice shipped early (2026-06-13, owner direction) — see §5. It's live and additive, with `party_size`, per-slot capacity, and non-custodial payments untouched. **Everything else remains deferred** until the liquidity trigger: international card, currency display, and the entire corporate sub-channel (block-booking, invoice/pay-later, org accounts, private experiences). This document stays the ready-to-execute plan for those — and a guardrail reminder that the v1 build must keep the reused primitives intact so the rest can bolt on later.
