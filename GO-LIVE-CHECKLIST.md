@@ -146,6 +146,16 @@ these invariants; this re-verifies them against live rails. [DEPLOYMENT.md §7 t
 - [ ] Duplicate/replayed webhook → no double-confirm, no double-count.
 - [ ] Two users on the last seat → exactly one succeeds.
 - [ ] Missed webhook → reconciliation recovers state within its window.
+      - [x] *Both reconcile branches verified on local 2026-06-14 (via the authenticated cron).*
+        **Expire/release:** a pending payment past the 15-min window → booking cancelled, payment
+        failed, reserved seats released (`expired:1`). **Poll→confirm:** a "settled-but-callback-
+        missed" payment → reconcile polls the provider, finds success, confirms the booking +
+        issues the ticket + keeps the seat (`confirmed:1`); idempotent re-run (`checked:0`). The
+        payout poll→confirm path verified the same way (`payouts confirmed:1` → booking paid). To
+        make the poll path testable on the mock (its `getStatus` is `pending` by design), added a
+        dev-only `mode:"stage"` to the mock endpoints that records a settled status without
+        delivering a callback (disabled in prod; mock-only). Live `getStatus` against IntaSend is
+        still exercised in the real-money pass, but the reconcile logic is now fully proven locally.
 - [ ] Scan a ticket twice → second rejected (already used).
 - [ ] Scan as the wrong operator → rejected (not your experience).
 
