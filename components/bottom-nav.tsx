@@ -102,7 +102,7 @@ export function BottomNav({
   return (
     <nav
       aria-label="Primary"
-      className="border-hairline bg-background/95 fixed inset-x-0 bottom-0 z-20 flex border-t pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
+      className="glass border-hairline fixed inset-x-0 bottom-0 z-20 flex border-t pb-[env(safe-area-inset-bottom)] sm:hidden"
     >
       {tabs.map((t) => {
         const active = t.match.some(
@@ -113,12 +113,20 @@ export function BottomNav({
             key={t.href}
             href={t.href}
             aria-current={active ? "page" : undefined}
-            className={`text-caption flex min-h-16 flex-1 flex-col items-center justify-center gap-1 ${
-              active ? "text-sunset" : "text-muted"
-            }`}
+            className="text-caption ease-out-soft flex min-h-16 flex-1 flex-col items-center justify-center gap-1 transition-transform duration-200 active:scale-95"
           >
-            {t.icon}
-            <span>{t.label}</span>
+            {/* Active tab gets a frosted pill behind the icon — a second,
+                non-colour cue (shape) alongside the Sunset tint. */}
+            <span
+              className={`ease-out-soft flex h-8 w-12 items-center justify-center rounded-full transition-colors duration-200 ${
+                active ? "bg-accent-soft text-sunset" : "text-muted"
+              }`}
+            >
+              {t.icon}
+            </span>
+            <span className={active ? "text-sunset" : "text-muted"}>
+              {t.label}
+            </span>
           </Link>
         );
       })}

@@ -51,7 +51,7 @@ export function SlotPicker({
   const total = selected.priceKes * safeParty;
 
   return (
-    <div className="border-hairline rounded-card bg-surface flex flex-col gap-4 border p-4">
+    <div className="glass-strong border-hairline rounded-card flex flex-col gap-4 border p-4">
       <div className="flex flex-col gap-2">
         <span className="text-small text-foreground">{labels.chooseDate}</span>
         <div className="flex flex-col gap-2">

@@ -11,10 +11,10 @@ export function CategoryChips({ active }: { active?: string }) {
           <Link
             key={c}
             href={`/experiences?category=${encodeURIComponent(c)}`}
-            className={`text-small ease-out-soft shrink-0 rounded-full px-3.5 py-2 transition-[background-color,box-shadow,transform] duration-200 active:scale-95 ${
+            className={`text-small ease-out-soft shrink-0 rounded-full border px-3.5 py-2 transition-[background-color,box-shadow,transform] duration-200 active:scale-95 ${
               selected
-                ? "bg-accent-strong text-accent-contrast shadow-card"
-                : "border-hairline bg-surface text-foreground hover:border-sunset/40 border hover:-translate-y-px"
+                ? "bg-accent-strong text-accent-contrast border-transparent shadow-card"
+                : "glass border-hairline text-foreground hover:border-sunset/40 hover:-translate-y-px"
             }`}
           >
             {c}
