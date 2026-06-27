@@ -15,7 +15,7 @@ export async function SiteHeader() {
 
   return (
     <>
-      <header className="border-hairline bg-background/90 sticky top-0 z-10 border-b backdrop-blur">
+      <header className="glass border-hairline sticky top-0 z-10 border-b">
         <div className="mx-auto flex h-14 w-full max-w-2xl items-center justify-between px-5">
           <Link href="/" aria-label="RoaVa home">
             <Logo />

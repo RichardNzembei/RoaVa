@@ -261,7 +261,7 @@ function Summary({
   guestMany: string;
 }) {
   return (
-    <div className="border-hairline rounded-card bg-surface flex w-full items-center justify-between border p-3">
+    <div className="glass-strong border-hairline rounded-card flex w-full items-center justify-between border p-3">
       <span className="text-small text-muted">
         {party} {party === 1 ? guestOne : guestMany}
       </span>

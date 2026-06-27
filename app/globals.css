@@ -19,6 +19,18 @@
   --accent-strong: #a8482a; /* Sunset-dark — button/chip FILLS so white text hits WCAG AA (5.8:1) */
   --accent-contrast: #ffffff; /* text/icon on accent-strong fills */
   --accent-soft: #faece7; /* Sunset-tint fills, selected chips */
+
+  /*
+    Glass (frosted) surfaces — overlay chrome only (header, bottom nav, pay
+    sheet, modals, filter chips). Opacity is kept HIGH (0.72–0.85), not the
+    showy 0.15, so ink text stays WCAG-AA even over a busy photo behind the
+    blur. Blur is bounded (14–18px) for the low-end-Android budget, and the
+    @supports / reduced-transparency fallbacks below drop to an opaque surface.
+  */
+  --glass-bg: rgb(255 255 255 / 0.72); /* chrome strips */
+  --glass-bg-strong: rgb(255 255 255 / 0.85); /* sheets / panels */
+  --glass-border: rgb(255 255 255 / 0.55); /* top light edge */
+  --glass-shadow: 0 8px 32px -12px rgb(36 31 28 / 0.22);
 }
 
 .dark {
@@ -32,6 +44,12 @@
   --accent-strong: #d85a30; /* Sunset fill — dark contrast text on it is 4.65:1 (AA) */
   --accent-contrast: #1a120d;
   --accent-soft: #3a2218; /* dark coral fill */
+
+  /* Glass — tinted from the dark surface; lighter top edge for the frosted lip. */
+  --glass-bg: rgb(33 27 23 / 0.62);
+  --glass-bg-strong: rgb(33 27 23 / 0.8);
+  --glass-border: rgb(255 255 255 / 0.1);
+  --glass-shadow: 0 8px 32px -12px rgb(0 0 0 / 0.5);
 }
 
 @theme {
@@ -114,6 +132,10 @@
     --accent-strong: #d85a30;
     --accent-contrast: #1a120d;
     --accent-soft: #3a2218;
+    --glass-bg: rgb(33 27 23 / 0.62);
+    --glass-bg-strong: rgb(33 27 23 / 0.8);
+    --glass-border: rgb(255 255 255 / 0.1);
+    --glass-shadow: 0 8px 32px -12px rgb(0 0 0 / 0.5);
   }
 }
 
@@ -128,6 +150,51 @@ body {
 /* The single soft shadow reserved for the pay bottom-sheet (Section 7). */
 @utility shadow-sheet {
   box-shadow: 0 -2px 24px -4px rgb(36 31 28 / 0.18);
+}
+
+/*
+  Frosted-glass surfaces. `glass` = translucent chrome (header / bottom nav /
+  filter chips); `glass-strong` = denser panels/sheets/modals that also carry
+  the soft elevation. Both pair the blur with a `saturate` so the colour behind
+  reads richer (the "frosted" look) and a 1px light top edge. Use with a
+  `border` utility so `--glass-border` lands as the colour. Blur is bounded for
+  low-end GPUs; the fallback rules below remove it where unsupported/unwanted.
+*/
+@utility glass {
+  background-color: var(--glass-bg);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  border-color: var(--glass-border);
+}
+@utility glass-strong {
+  background-color: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/*
+  Graceful degradation. Where backdrop-filter isn't supported, or the user asks
+  for reduced transparency (an OS accessibility setting), drop to a fully opaque
+  surface so text contrast and legibility never depend on the blur. Plain
+  selectors (unlayered) win over the @utility output, so these reliably override.
+*/
+@supports not (
+  (-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))
+) {
+  .glass,
+  .glass-strong {
+    background-color: var(--surface);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-strong {
+    background-color: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 /*

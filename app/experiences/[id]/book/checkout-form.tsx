@@ -75,7 +75,7 @@ export function CheckoutForm({
       </label>
 
       {gift ? (
-        <div className="border-hairline bg-surface flex flex-col gap-4 rounded-card border p-4">
+        <div className="glass border-hairline flex flex-col gap-4 rounded-card border p-4">
           <TextField
             label={labels.giftRecipientLabel}
             name="recipient"

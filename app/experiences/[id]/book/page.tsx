@@ -51,7 +51,7 @@ export default async function CheckoutPage({
       </Link>
       <h1 className="text-h1 text-foreground">{t("checkout_title")}</h1>
 
-      <div className="border-hairline rounded-card bg-surface flex flex-col gap-3 border p-4">
+      <div className="glass-strong border-hairline rounded-card flex flex-col gap-3 border p-4">
         <Row label={t("checkout_experience")} value={exp.title} />
         <Row label={t("checkout_date")} value={formatSlotDateTime(slot.startAt)} />
         <Row label={t("checkout_guests")} value={String(party)} />
