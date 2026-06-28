@@ -5,6 +5,7 @@ import "./globals.css";
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar";
 import { SiteHeader } from "@/components/site-header";
 import { Analytics } from "@/components/analytics";
+import { MotionProvider } from "@/components/motion-provider";
 
 // Humanist sans, two weights only (400/500) to keep rendering crisp and the
 // bundle light on low-end Android (Section 1 + performance budget).
@@ -58,7 +59,7 @@ export default function RootLayout({
       </head>
       <body className="bg-background text-foreground flex min-h-full flex-col pb-16 sm:pb-0">
         <SiteHeader />
-        {children}
+        <MotionProvider>{children}</MotionProvider>
         <ServiceWorkerRegistrar />
         <Suspense fallback={null}>
           <Analytics />

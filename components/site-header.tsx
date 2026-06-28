@@ -4,6 +4,7 @@ import { getT, getLocale } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { LanguageToggle } from "@/components/language-toggle";
 import { BottomNav } from "@/components/bottom-nav";
+import { HeaderShell } from "@/components/header-shell";
 
 // Auth-aware top bar. Server component — re-renders per request from the
 // session cookie, so it reflects sign-in/out and role changes immediately.
@@ -15,13 +16,12 @@ export async function SiteHeader() {
 
   return (
     <>
-      <header className="glass border-hairline sticky top-0 z-10 border-b">
-        <div className="mx-auto flex h-14 w-full max-w-2xl items-center justify-between px-5">
-          <Link href="/" aria-label="RoaVa home">
-            <Logo />
-          </Link>
+      <HeaderShell>
+        <Link href="/" aria-label="RoaVa home">
+          <Logo />
+        </Link>
 
-          <nav className="-mr-2 flex h-full items-center gap-1">
+        <nav className="-mr-2 flex h-full items-center gap-1">
             {/* Text links on ≥sm; on mobile the bottom tab bar carries these.
                 Full-height links give ~56px-tall tap targets (≥48px min, §7). */}
             <div className="hidden h-full items-center gap-1 sm:flex">
@@ -63,8 +63,7 @@ export async function SiteHeader() {
             </div>
             <LanguageToggle locale={locale} />
           </nav>
-        </div>
-      </header>
+      </HeaderShell>
 
       <BottomNav
         signedIn={Boolean(profile)}

@@ -6,6 +6,7 @@ import { renderQrSvg } from "@/lib/qr";
 import { formatSlotDateTime } from "@/lib/format";
 import { getT } from "@/lib/i18n";
 import { TicketClock } from "@/components/ticket-clock";
+import { TicketQr } from "@/components/ticket-qr";
 
 export default async function TicketPage({
   params,
@@ -82,11 +83,7 @@ export default async function TicketPage({
         <div className="bg-surface flex flex-col gap-5 px-6 pb-6 pt-3">
           {qrSvg ? (
             <div className="flex flex-col items-center gap-3">
-              <div
-                className={`ring-border overflow-hidden rounded-card bg-white p-3 ring-1 ${used ? "opacity-40" : ""}`}
-                dangerouslySetInnerHTML={{ __html: qrSvg }}
-                aria-label="Ticket QR code"
-              />
+              <TicketQr svg={qrSvg} used={used} />
               {used ? (
                 <p className="text-small text-muted">
                   {t("op_checked_in")}
