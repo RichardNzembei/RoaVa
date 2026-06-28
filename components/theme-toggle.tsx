@@ -50,7 +50,7 @@ export function ThemeToggle({ label }: { label: string }) {
             type="button"
             aria-pressed={theme === o.value}
             onClick={() => choose(o.value)}
-            className={`text-small min-h-10 rounded-[6px] px-4 ${
+            className={`text-small ease-out-soft min-h-10 rounded-[6px] px-4 transition-colors duration-200 ${
               theme === o.value
                 ? "bg-sunset text-accent-contrast"
                 : "text-muted"

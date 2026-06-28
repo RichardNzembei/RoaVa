@@ -256,7 +256,7 @@ body {
 @keyframes roava-fade-up {
   from {
     opacity: 0;
-    transform: translate3d(0, 14px, 0);
+    transform: translate3d(0, 18px, 0);
   }
   to {
     opacity: 1;
@@ -269,7 +269,41 @@ body {
   will-change: transform;
 }
 @utility animate-fade-up {
-  animation: roava-fade-up 600ms ease-out both;
+  animation: roava-fade-up 640ms var(--ease-out-soft) both;
+}
+
+/* Hero headline reveal — each word rises out from a clipped baseline (the inner
+   span travels from fully below its overflow-hidden mask up to rest), staggered
+   for an editorial "type settling into place" entrance. Transform only (§7).
+   One-shot, so it's safe above the fold; the global reduced-motion rule snaps it
+   to the resting state. The wrapper carries the overflow-hidden mask in markup. */
+@keyframes roava-word-mask {
+  from {
+    transform: translate3d(0, 115%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+@utility animate-word-mask {
+  animation: roava-word-mask 820ms var(--ease-out-soft) both;
+}
+
+/* Hero ambient wash — a soft warm sunset glow that drifts slowly behind the
+   headline so the hero stays quietly alive after the entrance settles. Pure
+   transform on a single low-alpha radial layer (cheap for low-end GPUs, §6);
+   slow + alternating so it never reads as "busy". Disabled by reduced-motion. */
+@keyframes roava-aurora {
+  from {
+    transform: translate3d(-4%, 3%, 0) scale(1.05);
+  }
+  to {
+    transform: translate3d(5%, -3%, 0) scale(1.18);
+  }
+}
+@utility animate-aurora {
+  animation: roava-aurora 24s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 /* Celebratory confirmation — a badge that pops in with a one-shot ring burst.

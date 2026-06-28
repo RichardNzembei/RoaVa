@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { AnimatePresence, m } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/text-field";
 import { payWithMpesa, type CheckoutState } from "./actions";
@@ -74,26 +75,40 @@ export function CheckoutForm({
         <span className="text-small text-foreground">{labels.giftToggle}</span>
       </label>
 
-      {gift ? (
-        <div className="glass border-hairline flex flex-col gap-4 rounded-card border p-4">
-          <TextField
-            label={labels.giftRecipientLabel}
-            name="recipient"
-            type="text"
-            inputMode="email"
-            autoComplete="off"
-            placeholder="0712 345 678 / them@example.com"
-            hint={labels.giftRecipientHint}
-          />
-          <TextField
-            label={labels.giftMessageLabel}
-            name="gift_message"
-            type="text"
-            autoComplete="off"
-            placeholder="Enjoy! 🎁"
-          />
-        </div>
-      ) : null}
+      {/* Gift panel slides open rather than snapping in — height + opacity only,
+          on the house ease; collapses on exit. Reduced-motion users get an
+          instant toggle via MotionConfig. */}
+      <AnimatePresence initial={false}>
+        {gift ? (
+          <m.div
+            key="gift-panel"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="glass border-hairline flex flex-col gap-4 rounded-card border p-4">
+              <TextField
+                label={labels.giftRecipientLabel}
+                name="recipient"
+                type="text"
+                inputMode="email"
+                autoComplete="off"
+                placeholder="0712 345 678 / them@example.com"
+                hint={labels.giftRecipientHint}
+              />
+              <TextField
+                label={labels.giftMessageLabel}
+                name="gift_message"
+                type="text"
+                autoComplete="off"
+                placeholder="Enjoy! 🎁"
+              />
+            </div>
+          </m.div>
+        ) : null}
+      </AnimatePresence>
 
       <PayButton idle={labels.pay} busy={labels.paying} />
       <p className="text-caption text-muted text-center">{labels.payNote}</p>

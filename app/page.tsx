@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { fetchExperiences } from "@/lib/experiences";
@@ -32,18 +33,43 @@ export default async function Landing() {
         <HeroCarousel images={HERO_IMAGES} videoSrc={HERO_VIDEO_SRC || undefined} />
         {/* Warm sunset wash for brand + text contrast (white on dark passes AA) */}
         <div className="from-ink/85 via-ink/55 to-sunset/45 absolute inset-0 -z-10 bg-gradient-to-t" />
+        {/* Slow-drifting sunset glow — keeps the hero alive after the entrance
+            settles. Low-alpha single radial layer, transform-only, behind text. */}
+        <div
+          aria-hidden
+          className="animate-aurora absolute inset-0 -z-10 [background:radial-gradient(55%_45%_at_30%_65%,rgba(216,90,48,0.45),transparent_70%)]"
+        />
 
         <div className="mx-auto flex min-h-[78vh] w-full max-w-2xl flex-col justify-end gap-6 px-5 pb-14 pt-24 text-white">
           <span className="animate-fade-up text-small/none opacity-90">
             {t("brand_descriptor")}
           </span>
-          <h1 className="animate-fade-up text-hero max-w-xl [animation-delay:80ms]">
-            {t("hero_title")}
+          {/* Headline reveals word-by-word — each word rides up out of an
+              overflow-hidden mask (the pb/-mb pair gives descenders like g/y
+              room inside the clip without shifting layout). Words are
+              inline-block so lines still wrap naturally; stagger is capped so a
+              long (e.g. Kiswahili) title never drags the cascade out. */}
+          <h1 className="text-hero max-w-xl">
+            {t("hero_title")
+              .split(" ")
+              .map((word, i, arr) => (
+                <Fragment key={i}>
+                  <span className="-mb-[0.12em] inline-block overflow-hidden pb-[0.12em] align-bottom">
+                    <span
+                      className="animate-word-mask inline-block"
+                      style={{ animationDelay: `${140 + Math.min(i, 8) * 90}ms` }}
+                    >
+                      {word}
+                    </span>
+                  </span>
+                  {i < arr.length - 1 ? " " : null}
+                </Fragment>
+              ))}
           </h1>
-          <p className="animate-fade-up text-body max-w-md opacity-95 [animation-delay:160ms]">
+          <p className="animate-fade-up text-body max-w-md opacity-95 [animation-delay:460ms]">
             {t("hero_body")}
           </p>
-          <div className="animate-fade-up flex flex-wrap gap-3 [animation-delay:240ms]">
+          <div className="animate-fade-up flex flex-wrap gap-3 [animation-delay:580ms]">
             <Link
               href="/discover"
               className="bg-accent-strong text-accent-contrast ease-out-soft inline-flex min-h-12 items-center justify-center rounded-base px-5 text-h3 shadow-card transition-transform duration-200 active:scale-[0.97]"
